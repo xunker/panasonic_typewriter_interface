@@ -56,6 +56,20 @@ Connector | Cable
  (TXD-) 3 | 5 (RXD-)
  (TXD+) 6 | 8 (RXD+)
 
+---
+
+character mappings:
+
+Only lower-ascii is a direct match. Upper-ascii is befunged. Sample mappings
+I've found
+
+typewriter | ascii char
+-----------|-----------
+í          | é
+¼          | •
+½          |
+ß          | ≠
+Ù          | ˚
 
 */
 #define ON_LINE_PIN 5 // Output, active LOW
@@ -65,8 +79,55 @@ Connector | Cable
 
 #define GO_PIN A7 // trigger printing to begin
 
-char message[24] = "Hello, from Panasonic!\n"; // the max. string length is n-1 characters,
+// char message[24] = "Hello, from Panasonic!\n"; // the max. string length is n-1 characters,
                                               // last char is Null as string-terminator
+char messages[][54] = {
+  "This place is a message,",
+  "and part of a system of messages.",
+  "Pay attention to it!",
+  "",
+  "Sending this message was important to us.",
+  "We considered ourselves to be a powerful culture.",
+  "",
+  "This place is not a place of honor.",
+  "No highly esteemed deed is commemorated here.",
+  "Nothing valued is here.",
+  "",
+  "What is here was dangerous and repulsive to us.",
+  "This message is a warning about danger.",
+  "",
+  "The danger is in a particular location.",
+  "It increases towards a center.",
+  "The center of danger is here,",
+  "Of a particular size and shape, and below us.",
+  "",
+  "The danger is still present,",
+  "in your time, as it was in ours.",
+  "",
+  "The danger is to the body, and it can kill.",
+  "",
+  "The form of the danger is an emanation of energy.",
+  "",
+  "The danger is unleashed only if you substantially",
+  "disturb this place physically.",
+  "",
+  "This place is best shunned and left uninhabited."
+};
+
+/*
+character mappings:
+
+Only lower-ascii is a direct match. Upper-ascii is befunged.
+
+typewriter | ascii char
+-----------|-----------
+í          | é
+¼          | •
+½          |
+ß          | ≠
+Ù          | ˚
+*/
+
 void onLinePin(bool pinState) {
   digitalWrite(ON_LINE_PIN, pinState);
 }
@@ -169,75 +230,87 @@ void loop() {
   }
 }
 
+void sendByte(char outbound) {
+  for(uint8_t bitPos = 0;  bitPos < 8; bitPos++) {
+    /*
+    Wait for ACK to be high. The process outline at the beginning of this
+    file has this check *after* sending a bit, but I'm assuming ACK will be
+    LOW from the get-go
+    */
+    waitForACKToGo(LOW);
+
+    /*
+    Send the bit. It's compatible with whatever character set Arduino uses.
+    */
+    if (bitRead(outbound, bitPos)) {
+      TXDPin(HIGH);
+      Serial.print("1");
+    } else {
+      TXDPin(LOW);
+      Serial.print("0");
+    }
+    delay(5); // wait for level to settle
+
+    /*
+    Set STB to low signal to the typewritter to read the current TXD value.
+    */
+    STBPin(LOW);
+    delay(5); // wait for level to settle
+
+    /*
+    ACK is kept high while the bit is being processed by the typewriter, and
+    will go low once its ready to accept the next bit.
+    */
+    waitForACKToGo(HIGH);
+
+    /*
+    Set STB to HIGH to tell the typewriter to latch the TXD value.
+    */
+    STBPin(HIGH);
+
+    LEDPin(LOW);
+
+    delay(5);
+
+    TXDPin(LOW); // resest the txd pin, even though I don't think we need to
+  }
+}
+
+uint8_t messageIdx = 0;
+
+
 void printLoop() {
   Serial.println(millis());
-  Serial.println(message);
+  Serial.println(messages[messageIdx]);
 
-  for (uint8_t strPos = 0; strPos < sizeof(message); strPos++) {
+  for (uint8_t strPos = 0; strPos < sizeof(messages[messageIdx]); strPos++) {
     /*
     ON_LINE goes LOW at the beginning of the BYTE transmission, and remains
     high until all bits of the byte are transmitted.
     */
     onLinePin(LOW);
 
-    Serial.print(message[strPos]);
+    Serial.print(messages[messageIdx][strPos]);
     Serial.print(" ");
 
-    // Loop over each bit in the character
-    for(uint8_t bitPos = 0;  bitPos < 8; bitPos++) {
+    if (messages[messageIdx][strPos] == 0b00000000)
+      continue;
+    sendByte(messages[messageIdx][strPos]);
 
-
-      /*
-      Wait for ACK to go high. The process outline at the beginning of this
-      file has this check *after* sending a bit, but I'm assuming ACK will be
-      HIGH from the get-go
-      */
-      // waitForACKToGo(HIGH);
-
-      /*
-      Send the bit. Assuming the signal is NRZ, so the transition of the TXD pin
-      is what matters and not the logic level. NO NOT TRUE!
-      */
-      if (bitRead(message[strPos], bitPos)) {
-        // toggleTXD();
-        TXDPin(HIGH);
-        Serial.print("1");
-      } else {
-        TXDPin(LOW);
-        Serial.print("0");
-      }
-      delay(5); // wait for level to settle
-
-      /*
-      Set STB to low signal to the typewritter to read the current TXD value.
-      */
-      STBPin(LOW);
-      delay(5); // wait for level to settle
-
-      /*
-      ACK is kept high while the bit is being processed by the typewriter, and
-      will go low once its ready to accept the next bit.
-      */
-      waitForACKToGo(HIGH);
-
-      /*
-      Set STB to HIGH to tell the typewriter to latch the TXD value.
-      */
-      STBPin(HIGH);
-
-      LEDPin(LOW);
-
-      delay(5);
-
-      TXDPin(LOW); // resest the txd pin, even though I don't think we need to
-    }
     Serial.print("\n");
     onLinePin(HIGH); // Signals end of byte
     TXDPin(LOW); // resest the txd pin, even though I don't think we need to
 
-    delay(250); // wait for the printer to actually print the character
+    delay(10); // wait for the printer to actually print the character
   }
   LEDPin(LOW);
+  sendByte('\r');
+  sendByte('\n');
 
   delay(1000);
+
+  messageIdx++;
+  if (messageIdx > 30) {
+    messageIdx = 0;
+  }
 }
