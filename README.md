@@ -140,6 +140,8 @@ keep being sent to the typewriter.
 * Build a real serial interface that accept serial data over USB/RxD and sends
   it to the typewriter
 * Add more LED options, to reflect the states of the various pins
+* Automatic detection of a crossover MiniDIN-8 cable by checking which of
+  Pin 3 or 5 are connected to +12V, and automatically adjust the other pins accordingly
 * Convert special characters like tab ("\t") to spaces, to prevent typewriter
   from going crazy if no tabs have been set
 * Convert upper-ascii (e.g. accented) characters to correct character for
