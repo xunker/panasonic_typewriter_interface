@@ -249,13 +249,13 @@ void sendByte(char outbound) {
       TXDPin(LOW);
       Serial.print("0");
     }
-    delay(5); // wait for level to settle
+    delay(2); // wait for level to settle
 
     /*
     Set STB to low signal to the typewritter to read the current TXD value.
     */
     STBPin(LOW);
-    delay(5); // wait for level to settle
+    delay(2); // wait for level to settle
 
     /*
     ACK is kept high while the bit is being processed by the typewriter, and
@@ -270,7 +270,7 @@ void sendByte(char outbound) {
 
     LEDPin(LOW);
 
-    delay(5);
+    delay(2);
 
     TXDPin(LOW); // resest the txd pin, even though I don't think we need to
   }
@@ -301,7 +301,7 @@ void printLoop() {
     onLinePin(HIGH); // Signals end of byte
     TXDPin(LOW); // resest the txd pin, even though I don't think we need to
 
-    delay(10); // wait for the printer to actually print the character
+    delay(5); // wait for the printer to actually print the character
   }
   LEDPin(LOW);
   sendByte('\r');
