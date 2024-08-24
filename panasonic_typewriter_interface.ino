@@ -1,44 +1,54 @@
 /*
+# Printing to a Panasonic KX-R435 (and compatible) electronic typewriter from a
+computer
+
+Sort-of emulates what the KX-R60, RP-K100, or RP-K105 interface adapters do,
+but without the useful part of being seen as a Centronics-compatible printer.
+
+## Theory of Operation
+
 From reference manual from KX-W50TH/W60TH service manual:
 
-10.2.4 Interface Circuit
-The interface circuit handles the handshaking needed for communication with a
-I/F Adaptor (RP-K100). The RP-K100 allows interfacing with a host computer.
-The handshake method is described in the following steps.
+  10.2.4 Interface Circuit
+  The interface circuit handles the handshaking needed for communication with a
+  I/F Adaptor (RP-K100). The RP-K100 allows interfacing with a host computer.
+  The handshake method is described in the following steps.
 
-Process;
-(1) The RP-K100 changes the ON LINE signal from H to L indicating that data
-transmission has started . This ON LINE signal remains Low during the
-transmission of 1 byte.
-(2) The RP-K100 first sends the LSB (DO) of a transmitted byte to the TXD line
-and changes the STB signal from H to L. This STB signal is sent to P51 of the
-CPU which is the interruption.
-(3) In the interruption state, the CPU receives a TXD signal and changes the
-ACK signal from L to H. This ACK signal is sent to the RP-K100.
-(4) After the RP-K100 has received the ACK signal (L level), the STB signal
-changes from L to H.
-(5) When the STB signal (High) is sent from the RP-K100, the thermalwriter
-sends the ACK signal (High) to the RP-K100.
-(6) When the ACK signal is High, the RP-K100 starts to send the next bit of
-data.
-(7) Once the RP-K100 sends 1 byte of data (8 bits) to the CPU , the ON LINE
-signal changes from L to H.
+  Process:
+  (1) The RP-K100 changes the ON LINE signal from H to L indicating that data
+  transmission has started . This ON LINE signal remains Low during the
+  transmission of 1 byte.
+  (2) The RP-K100 first sends the LSB (DO) of a transmitted byte to the TXD line
+  and changes the STB signal from H to L. This STB signal is sent to P51 of the
+  CPU which is the interruption.
+  (3) In the interruption state, the CPU receives a TXD signal and changes the
+  ACK signal from L to H. This ACK signal is sent to the RP-K100.
+  (4) After the RP-K100 has received the ACK signal (L level), the STB signal
+  changes from L to H.
+  (5) When the STB signal (High) is sent from the RP-K100, the thermalwriter
+  sends the ACK signal (High) to the RP-K100.
+  (6) When the ACK signal is High, the RP-K100 starts to send the next bit of
+  data.
+  (7) Once the RP-K100 sends 1 byte of data (8 bits) to the CPU , the ON LINE
+  signal changes from L to H.
 
 ---
 
-Pinout of MiniDIN-8 on Panasonic KX-R435:
+## Pinout of MiniDIN-8 on Panasonic KX-R435
 
-Din Pin | X-Over Pin | Source  | Signal   | Direction    | Notes
---------|------------|---------|----------|--------------|---------------------
-      1 |          2 | GND     |          |              |
-      2 |          1 | GND     |          |              |
-      3 |          5 | GND     |          |              |
-      4 |          4 | IC1 P16 | ~ACK     | out from MCU | (b)
-      5 |          3 | +12V    |          |              | For accessory power?
-      6 |          8 | IC1 P24 | TXD      | in to MCU    | (a,b,c)
-      7 |          7 | IC1 P18 | ~STB     | in to MCU    | (a,b,c)
-      8 |          6 | IC1 P23 | ~ON_LINE | in to MCU    | (a,b,c)
- Shield |     Shield | GND     |          |              |
+"Direction" is relative to the Typewriter itself.
+
+Din Pin | X-Over Pin | Source  | Signal   | Direction | Notes
+--------|------------|---------|----------|-----------|---------------------
+      1 |          2 | GND     |          |           |
+      2 |          1 | GND     |          |           |
+      3 |          5 | GND     |          |           |
+      4 |          4 | IC1 P16 | ~ACK     | out       | (b)
+      5 |          3 | +12V    |          |           | For accessory power?
+      6 |          8 | IC1 P24 | TXD      | in        | (a,b,c)
+      7 |          7 | IC1 P18 | ~STB     | in        | (a,b,c)
+      8 |          6 | IC1 P23 | ~ON_LINE | in        | (a,b,c)
+ Shield |     Shield | GND     |          |           |
 
 Notes:
 (a) Routed to MCU pin through a 100-ohm resistor
@@ -56,9 +66,12 @@ Connector | Cable
  (TXD-) 3 | 5 (RXD-)
  (TXD+) 6 | 8 (RXD+)
 
----
+!! IMPORTANT !!
 
-character mappings:
+PIN 5 may carry 12V! That voltage can COMPLETELY RUIN your microcontroller!
+Verify the voltages of ALL PINS before connecting typerwiter to your device.
+
+## character mappings
 
 Only lower-ascii is a direct match. Upper-ascii is befunged. Sample mappings
 I've found
@@ -79,8 +92,10 @@ typewriter | ascii char
 
 #define GO_PIN A7 // trigger printing to begin
 
-// char message[24] = "Hello, from Panasonic!\n"; // the max. string length is n-1 characters,
-                                              // last char is Null as string-terminator
+/*
+this is a REALLY memory-inefficient way to store strings, and is only here as
+to provide example text.
+*/
 char messages[][54] = {
   "This place is a message,",
   "and part of a system of messages.",
@@ -210,11 +225,6 @@ void setup() {
   pinMode(GO_PIN, INPUT_PULLUP);
   setInitialPinStates();
 
-  // pinMode(ON_LINE_PIN, INPUT_PULLUP);
-  // pinMode(STB_PIN, INPUT_PULLUP);
-  // pinMode(ACK_PIN, INPUT_PULLUP);
-  // pinMode(TXD_PIN, INPUT_PULLUP);
-
   delay(1000);
   Serial.begin(57600);
 }
@@ -277,7 +287,6 @@ void sendByte(char outbound) {
 }
 
 uint8_t messageIdx = 0;
-
 
 void printLoop() {
   Serial.println(millis());
