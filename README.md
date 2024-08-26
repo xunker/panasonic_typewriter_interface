@@ -22,7 +22,7 @@ Untested, but should work with the appropriate DE-9 (DB-9) adapter.
 
 ### MiniDIN-8
 
-![image info](./minidin8.png)
+![image info](./kxr-minidin8.png)
 
 ("Direction" is relative to the Typewriter itself)
 
