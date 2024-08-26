@@ -16,7 +16,7 @@ Panasonic typewriter with the round, 8-pin MiniDIN port.
 
 ## KX-W series with DE-9 port
 
-Untested, but should work with the appropriate DE-9 (DB-9) adapter.
+Untested, but should work with machines which have a DE-9 (DB-9) connector.
 
 ## Pinout
 
@@ -38,16 +38,17 @@ Shield  |     Shield | gnd      |         |           |
 
 #### Notes
 
-("Direction" is relative to the Typewriter itself)
+* `X-Over Pin` column is the pin number if you are using a Macintosh-style
+  printer cable which swaps pins 1-2, 3-5, and 6-8. These are also called
+  "null-modem" or "cross-over" cables.
+* `Direction` is relative to the Typewriter itself.
+* `Source` is where the pin connects to inside my own R435 typewriter. This
+  will vary depending on model.
 
-1. Routed to MCU pin through a 100-ohm resistor
-2. Has 1.5K pull-up to +5v
-3. Decoupled via 103Z ceramic cap (10K pF, +80%/-20% tolerance) to ground
-4. Has 10K pull-down to ground
-
-"X-Over Pin" is if you are using a Macintosh-style printer cable. Be aware that
-these cables are usually a "cross-over" or "null-modem" cable and several pairs
-of pins are swapped. The swapped pins are those in the "X-Over Pin" column.
+1. Routed to typewriter CPU pin through a 100-ohm resistor
+2. 1.5K pull-up to +5v
+3. Decoupled to ground via a 103Z ceramic cap (10K pF, +80%/-20% tolerance)
+4. 10K pull-down to ground
 
 #### IMPORTANT - LOTS OF DANGER!
 
@@ -56,11 +57,29 @@ DO NOT CONNECT THIS PIN DIRECTLY TO YOUR DEVICE! Verify the voltages of ALL PINS
 
 ### DE-9 / DB-9
 
-Unknown / Untested
+I based my work from [this page](./panasonic_rp-k100_interface_circuit.pdf) out
+of the KX-W50TH/KX-W60TH service manual, so this should also with appropriate
+DE-9 (DB-9) connector. It is, however, **untested**.
+
+DE-9 Pin | Signal   | Direction | Notes
+---------|----------|-----------|------
+1        | ~ON_LINE | in        |
+2        | ~STB     | in        |
+3        | ~ACK     | out       |
+4        | ~TXD     | in        |
+5        | n/c      |           |
+6        | n/c      |           |
+7        | n/c      |           |
+8        | n/c      |           |
+9        | gnd      |           |
+
+#### Notes
+
+* `Direction` is relative to the Typewriter itself.
 
 ## Theory of Operation
 
-From [this page](panasonic_rp-k100_interface_circuit) in the KX-W50TH/W60TH
+From [this page](./panasonic_rp-k100_interface_circuit.pdf) in the KX-W50TH/W60TH
 service manual:
 
 > 10.2.4 Interface Circuit
@@ -141,6 +160,7 @@ keep being sent to the typewriter.
 * Build a real serial interface that accept serial data over USB/RxD and sends
   it to the typewriter
 * Add more LED options, to reflect the states of the various pins
+  * or an I2C/SPI display?
 * Automatic detection of a crossover MiniDIN-8 cable by checking which of
   Pin 3 or 5 are connected to +12V, and automatically adjust the other pins accordingly
 * Convert special characters like tab ("\t") to spaces, to prevent typewriter
