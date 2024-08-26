@@ -95,41 +95,16 @@ typewriter | ascii char
 #define GO_PIN A7 // trigger printing to begin when this is pulled low
 
 /*
-this is a REALLY memory-inefficient way to store strings, and is only here as
-to provide example text.
+SIGNAL_SETTLE_DELAY: Used in waitForSignalToSettle(), see that function for
+explaination.
 */
-char messages[][54] = {
-  "This place is a message,",
-  "and part of a system of messages.",
-  "Pay attention to it!",
-  "",
-  "Sending this message was important to us.",
-  "We considered ourselves to be a powerful culture.",
-  "",
-  "This place is not a place of honor.",
-  "No highly esteemed deed is commemorated here.",
-  "Nothing valued is here.",
-  "",
-  "What is here was dangerous and repulsive to us.",
-  "This message is a warning about danger.",
-  "",
-  "The danger is in a particular location.",
-  "It increases towards a center.",
-  "The center of danger is here,",
-  "Of a particular size and shape, and below us.",
-  "",
-  "The danger is still present,",
-  "in your time, as it was in ours.",
-  "",
-  "The danger is to the body, and it can kill.",
-  "",
-  "The form of the danger is an emanation of energy.",
-  "",
-  "The danger is unleashed only if you substantially",
-  "disturb this place physically.",
-  "",
-  "This place is best shunned and left uninhabited."
-};
+#define SIGNAL_SETTLE_DELAY 2
+
+/*
+How many MILLIseconds to wait after sending a byte to the typewriter, to give it a chance to type
+the character
+*/
+#define CHARACTER_PRINT_DELAY 5
 
 /*
 character mappings:
@@ -145,87 +120,66 @@ typewriter | ascii char
 Ù          | ˚
 */
 
-void onLinePin(bool pinState) {
-  digitalWrite(ON_LINE_PIN, pinState);
-}
-
-void STBPin(bool pinState) {
-  digitalWrite(STB_PIN, pinState);
-}
-
-void ACKPin(bool pinState) {
-  digitalWrite(ACK_PIN, pinState);
-}
-
-void TXDPin(bool pinState) {
-  digitalWrite(TXD_PIN, pinState);
-}
-
-void toggleTXD() {
-  digitalWrite(TXD_PIN, !digitalRead(TXD_PIN));
-}
-
-void LEDPin(bool pinState) {
-  digitalWrite(LED_BUILTIN, pinState);
+void togglePin(uint8_t pinNum) {
+  digitalWrite(pinNum, !digitalRead(pinNum));
 }
 
 void toggleLED() {
-  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  togglePin(LED_BUILTIN);
 }
 
-void setInitialPinStates() {
-  onLinePin(HIGH);
-  STBPin(HIGH);
-  TXDPin(HIGH);
-  LEDPin(LOW);
-}
-
-void checkPin(String name, uint8_t pin) {
-  Serial.print(name);
-  Serial.print("\t");
-  Serial.println(digitalRead(pin));
-}
-
-void checkPinStates() {
-  Serial.println(millis());
-  checkPin("ON_LINE", ON_LINE_PIN);
-  checkPin("STB", STB_PIN);
-  checkPin("ACK", ACK_PIN);
-  checkPin("TXD", TXD_PIN);
-}
-
-void testLoop() {
-  checkPinStates();
-  delay(1000);
-}
+void onLinePin(bool pinState) { digitalWrite(ON_LINE_PIN, pinState); }
+void STBPin(bool pinState) { digitalWrite(STB_PIN, pinState); }
+void ACKPin(bool pinState) { digitalWrite(ACK_PIN, pinState); }
+void TXDPin(bool pinState) { digitalWrite(TXD_PIN, pinState); }
+void LEDPin(bool pinState) { digitalWrite(LED_BUILTIN, pinState); }
 
 void waitForACKToGo(bool pinState) {
   LEDPin(HIGH);
+
   uint8_t waitCounter = 0;
-  delay(1); // wait for typewriter to set ACK and signal to settle
   while(digitalRead(ACK_PIN) == !pinState) {
-    delay(10);
+    waitForSignalToSettle();
 
     if (waitCounter++ >= 100) {
-      // Serial.print(millis());
-      Serial.print(" waiting for ACK to go ");
+      Serial.print(millis());
+      Serial.print(F(" waiting for ACK to go "));
       Serial.println(pinState);
-      // checkPinStates();
       waitCounter = 0;
     }
   }
   LEDPin(LOW);
 }
 
+/*
+waitForSignalToSettle() is a separate method only to explain what's happening
+without adding a comment everywhere we delay for this reason.
+We will wait SIGNAL_SETTLE_DELAY MILLIseconds after we set an outbound pin
+state, but before reading the next dependent signal. This is to give the
+typewriter a chance to process the signal and for any levels to settle. For
+example, this delay is used between us setting ~STB and reading the ~ACK value
+from the typewriter.
+*/
+void waitForSignalToSettle() {
+  delay(SIGNAL_SETTLE_DELAY);
+}
+
+
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
+  // Pin Modes for typewriter
   pinMode(ON_LINE_PIN, OUTPUT);
   pinMode(STB_PIN, OUTPUT);
   pinMode(ACK_PIN, INPUT_PULLUP);
   pinMode(TXD_PIN, OUTPUT);
   pinMode(GO_PIN, INPUT_PULLUP);
-  setInitialPinStates();
+
+  // Set initial pin states for good measure
+  onLinePin(HIGH);
+  STBPin(HIGH);
+  TXDPin(HIGH);
+  LEDPin(LOW);
 
   delay(1000);
   Serial.begin(57600);
@@ -233,11 +187,10 @@ void setup() {
 
 void loop() {
   if (digitalRead(GO_PIN) == LOW) {
-    printLoop();
-    // testLoop();
+    relayLoop();
   } else {
     Serial.print(millis());
-    Serial.println(" Waiting for go...");
+    Serial.println(F(" Waiting for go..."));
     delay(1000);
   }
 }
@@ -251,9 +204,7 @@ void sendByte(char outbound) {
     */
     waitForACKToGo(LOW);
 
-    /*
-    Send the bit. It's compatible with whatever character set Arduino uses.
-    */
+    /* Send the bit. Compatible with whatever character set Arduino uses. */
     if (bitRead(outbound, bitPos)) {
       TXDPin(HIGH);
       Serial.print("1");
@@ -261,13 +212,11 @@ void sendByte(char outbound) {
       TXDPin(LOW);
       Serial.print("0");
     }
-    delay(2); // wait for level to settle
+    waitForSignalToSettle();
 
-    /*
-    Set STB to low signal to the typewritter to read the current TXD value.
-    */
+    /* Set STB to low, signaling typewritter to read the current TXD value. */
     STBPin(LOW);
-    delay(2); // wait for level to settle
+    waitForSignalToSettle();
 
     /*
     ACK is kept high while the bit is being processed by the typewriter, and
@@ -275,53 +224,36 @@ void sendByte(char outbound) {
     */
     waitForACKToGo(HIGH);
 
-    /*
-    Set STB to HIGH to tell the typewriter to latch the TXD value.
-    */
+    /* Set STB to HIGH to tell the typewriter to latch the TXD value. */
     STBPin(HIGH);
 
     LEDPin(LOW);
 
-    delay(2);
+    waitForSignalToSettle();
 
-    TXDPin(LOW); // resest the txd pin, even though I don't think we need to
+    TXDPin(LOW); // resest the txd pin, just to be sure
   }
+
+  onLinePin(HIGH); // Signals end of byte
 }
 
-uint8_t messageIdx = 0;
+char incomingByte;
+void relayLoop() {
+  while( Serial.available() > 0 ) {
+    incomingByte = Serial.read();
 
-void printLoop() {
-  Serial.println(millis());
-  Serial.println(messages[messageIdx]);
-
-  for (uint8_t strPos = 0; strPos < sizeof(messages[messageIdx]); strPos++) {
-    /*
-    ON_LINE goes LOW at the beginning of the BYTE transmission, and remains
-    high until all bits of the byte are transmitted.
-    */
-    onLinePin(LOW);
-
-    Serial.print(messages[messageIdx][strPos]);
-    Serial.print(" ");
-
-    if (messages[messageIdx][strPos] == 0b00000000)
+    if (incomingByte == 0b00000000)
       continue;
-    sendByte(messages[messageIdx][strPos]);
+
+    sendByte(incomingByte);
 
     Serial.print("\n");
-    onLinePin(HIGH); // Signals end of byte
-    TXDPin(LOW); // resest the txd pin, even though I don't think we need to
 
-    delay(5); // wait for the printer to actually print the character
+    delay(CHARACTER_PRINT_DELAY); // wait for the printer to actually print the character
+
+    LEDPin(LOW);
   }
-  LEDPin(LOW);
-  sendByte('\r');
-  sendByte('\n');
 
-  delay(1000);
-
-  messageIdx++;
-  if (messageIdx > 30) {
-    messageIdx = 0;
-  }
+  /* if nothing to read, wait a little bit before trying to read again */
+  delay(100);
 }
