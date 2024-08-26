@@ -22,9 +22,7 @@ Untested, but should work with the appropriate DE-9 (DB-9) adapter.
 
 ### MiniDIN-8
 
-![image info](./kxr-minidin8.png)
-
-("Direction" is relative to the Typewriter itself)
+<img src="./kxr-minidin8.png" height="250" alt="Panasonic KX-R MiniDIN-8 interface port pinout">
 
 DIN Pin | X-Over Pin | Signal   | Source  | Direction | Notes
 --------|------------|----------|---------|-----------|---------------------
@@ -38,7 +36,10 @@ DIN Pin | X-Over Pin | Signal   | Source  | Direction | Notes
 8       |          6 | ~ON_LINE | IC1 P23 | in        | (1,2,3)
 Shield  |     Shield | gnd      |         |           |
 
-Notes:
+#### Notes
+
+("Direction" is relative to the Typewriter itself)
+
 1. Routed to MCU pin through a 100-ohm resistor
 2. Has 1.5K pull-up to +5v
 3. Decoupled via 103Z ceramic cap (10K pF, +80%/-20% tolerance) to ground
