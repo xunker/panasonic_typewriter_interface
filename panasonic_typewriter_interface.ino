@@ -73,19 +73,6 @@ Connector | Cable
 PIN 5 may carry 12V! That voltage can COMPLETELY RUIN your microcontroller!
 Verify the voltages of ALL PINS before connecting typerwiter to your device.
 
-## character mappings
-
-Only lower-ascii is a direct match. Upper-ascii is befunged. Sample mappings
-I've found
-
-typewriter | ascii char
------------|-----------
-í          | é
-¼          | •
-½          |
-ß          | ≠
-Ù          | ˚
-
 */
 #define ON_LINE_PIN 5 // Output, active LOW
 #define STB_PIN 7  // Output, active LOW
@@ -106,83 +93,12 @@ the character
 */
 #define CHARACTER_PRINT_DELAY 5
 
-/*
-character mappings:
+/* Uncomment TEST_MODE to make this interface work in a demo mode that will
+   print various test strings */
+#define TEST_MODE
 
-Only lower-ascii is a direct match. Upper-ascii is befunged.
-
-typewriter | ascii char
------------|-----------
-í          | é
-¼          | •
-½          |
-ß          | ≠
-Ù          | ˚
-*/
-
-// The code for Esc/Escape (decimal 27), for processing Epson ESC/P Codes
-#define ESC_CODE 0b00011011
-
-bool inUnderlineMode = false;
-void toggleUnderlineMode(bool state) {
-  Serial.print(F("Setting Underline Mode to "));
-  Serial.println(state);
-  inUnderlineMode = state;
-}
-void toggleUnderlineModeOn() { toggleUnderlineMode(true); }
-void toggleUnderlineModeOff() { toggleUnderlineMode(false); }
-
-bool inDoubleStrikeMode = false;
-void toggleDoubleStrikeMode(bool state) {
-  Serial.print(F("Setting Double-Strike Mode to "));
-  Serial.println(state);
-  inDoubleStrikeMode = state;
-}
-void toggleDoubleStrikeModeOn() { toggleDoubleStrikeMode(true); }
-void toggleDoubleStrikeModeOff() { toggleDoubleStrikeMode(false); }
-
-typedef struct {
-  byte first;
-  uint8_t (*hFunc) ();
-} EscHandler;
-
-const EscHandler escHandlers[] {
-    {52, &toggleUnderlineModeOn},  // actually italic, using underscore instead
-    {53, &toggleUnderlineModeOff}, // actually italic, using underscore instead
-    {69, &toggleDoubleStrikeModeOn}, // semi-bold
-    {70, &toggleDoubleStrikeModeOff}, //semi-bold
-    {71, &toggleDoubleStrikeModeOn},
-    {72, &toggleDoubleStrikeModeOff},
-};
-
-/*
-
-Other misc codes to test:
-8   backspace
-7   beep or bell
-10  line feed (new line)
-11  down tab as set? What's this?
-12  form feed
-19  deselect printer (will that exit offline mode?)
-
-...if we change this code to buffer whole lines (and not print characters as
-soon as they are received), codes like this could be useful:
-127 Empty the print buffer/erase buffer from last character
-24  erase buffer from last line
-
-
-*/
-
-// Are we currently in Escape-code mode?
-bool currentEscMode = false;
-
-void togglePin(uint8_t pinNum) {
-  digitalWrite(pinNum, !digitalRead(pinNum));
-}
-
-void toggleLED() {
-  togglePin(LED_BUILTIN);
-}
+void togglePin(uint8_t pinNum) { digitalWrite(pinNum, !digitalRead(pinNum)); }
+void toggleLED() { togglePin(LED_BUILTIN); }
 
 void onLinePin(bool pinState) { digitalWrite(ON_LINE_PIN, pinState); }
 void STBPin(bool pinState) { digitalWrite(STB_PIN, pinState); }
@@ -220,7 +136,6 @@ void waitForSignalToSettle() {
   delay(SIGNAL_SETTLE_DELAY);
 }
 
-
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -243,7 +158,12 @@ void setup() {
 
 void loop() {
   if (digitalRead(GO_PIN) == LOW) {
-    relayLoop();
+    #ifdef TEST_MODE
+      testLoop();
+    #else
+      relayLoop();
+    #endif
+
   } else {
     Serial.print(millis());
     Serial.println(F(" Waiting for go..."));
@@ -252,6 +172,14 @@ void loop() {
 }
 
 void sendByte(char outbound) {
+  Serial.print(outbound);
+  Serial.print(F(" "));
+  /*
+  ON_LINE goes LOW at the beginning of the BYTE transmission, and remains
+  high until all bits of the byte are transmitted.
+  */
+  onLinePin(LOW);
+
   for(uint8_t bitPos = 0;  bitPos < 8; bitPos++) {
     /*
     Wait for ACK to be high. The process outline at the beginning of this
@@ -263,10 +191,10 @@ void sendByte(char outbound) {
     /* Send the bit. Compatible with whatever character set Arduino uses. */
     if (bitRead(outbound, bitPos)) {
       TXDPin(HIGH);
-      Serial.print("1");
+      Serial.print(F("1"));
     } else {
       TXDPin(LOW);
-      Serial.print("0");
+      Serial.print(F("0"));
     }
     waitForSignalToSettle();
 
@@ -295,51 +223,61 @@ void sendByte(char outbound) {
 }
 
 char incomingByte;
-bool lastEscCodeHandled = false;
+
+void processByte(byte incomingByte) {
+  if (incomingByte == 0b00000000)
+    return;
+
+  sendByte(incomingByte);
+
+  Serial.print(F("\n"));
+
+  LEDPin(LOW);
+}
 
 void relayLoop() {
   while( Serial.available() > 0 ) {
     incomingByte = Serial.read();
-
-    if (incomingByte == 0b00000000)
-      continue;
-
-    if (currentEscMode) {
-      // We're in escape mode
-      // Find the handler for this key code
-      for (uint8_t idx; idx < sizeof(escHandlers); idx++) {
-        if (escHandlers[idx].first == incomingByte) {
-          escHandlers[idx].hFunc();
-          lastEscCodeHandled = true;
-          break;
-        }
-      }
-
-      if (!lastEscCodeHandled) {
-        Serial.print(F("No handler for "));
-        Serial.println(incomingByte);
-      }
-      lastEscCodeHandled = false;
-
-      currentEscMode = false;
-      continue;
-    }
-
-    // We got an "escape code", so toggle the mode and loop again
-    if (incomingByte == ESC_CODE) {
-      currentEscMode = true;
-      continue;
-    }
-
-    sendByte(incomingByte);
-
-    Serial.print("\n");
-
-
-
-    LEDPin(LOW);
+    processByte(incomingByte);
   }
 
   /* if nothing to read, wait a little bit before trying to read again */
   delay(100);
+}
+
+#define ESC_CODE 0x1B
+// Overstrike test - works but not needed beause built-in underscore support
+// char testString[] = {
+//   'T', 0x08, '_', 'e', 0x08, '_', 's', 0x08, '_', 't', 0x08, '_', '.', '\r', '\n'
+// };
+
+// Bell test - no workie
+// char testString[] = { 0x07 };
+
+// Absolute tab - kinda works?
+// char testString[] = {
+//   ESC_CODE, 0x09, 2, ESC_CODE, 0x09, 4, ESC_CODE, ESC_CODE, 0x09, 0,
+// };
+
+//built-in underscore and bold
+char testString[] = {
+  ESC_CODE, 0x45, // Bold on
+  'B', 'o', 'l', 'd',
+  ESC_CODE, 0x46, // Bold off
+  ' ',
+  ESC_CODE, 0x2D, 0x01, // Underscore on
+  'U', 'n', 'd', 'e', 'r', 'l', 'i', 'n', 'e',
+  ESC_CODE, 0x2D, 0x00, // Underscore off
+  '\r', '\n'
+};
+
+uint8_t testStringIdx = 0;
+void testLoop() {
+  processByte(testString[testStringIdx]);
+
+  testStringIdx++;
+  if (testStringIdx >= sizeof(testString))
+    testStringIdx = 0;
+
+  delay(500);
 }
