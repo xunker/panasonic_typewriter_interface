@@ -286,6 +286,8 @@ void sendByte(char outbound) {
 
     TXDPin(LOW); // resest the txd pin, even though I don't think we need to
   }
+  onLinePin(HIGH); // Signals end of byte
+  delay(5); // wait for the printer to actually print the character
 }
 
 uint8_t messageIdx = 0;
@@ -309,10 +311,7 @@ void printLoop() {
     sendByte(messages[messageIdx][strPos]);
 
     Serial.print("\n");
-    onLinePin(HIGH); // Signals end of byte
-    TXDPin(LOW); // resest the txd pin, even though I don't think we need to
 
-    delay(5); // wait for the printer to actually print the character
   }
   LEDPin(LOW);
   sendByte('\r');
