@@ -291,6 +291,7 @@ void sendByte(char outbound) {
   }
 
   onLinePin(HIGH); // Signals end of byte
+  delay(CHARACTER_PRINT_DELAY); // wait for the printer to actually print the character
 }
 
 char incomingByte;
@@ -334,7 +335,7 @@ void relayLoop() {
 
     Serial.print("\n");
 
-    delay(CHARACTER_PRINT_DELAY); // wait for the printer to actually print the character
+
 
     LEDPin(LOW);
   }
