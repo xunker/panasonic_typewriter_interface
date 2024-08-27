@@ -100,12 +100,12 @@ the character
 /* Enable upper-ascii character translation. THIS IS CURRENTLY BROKEN. */
 // #define ENABLE_CHARACTER_TRANSLATION
 
-typedef struct {
-  char incoming; // coming in from serial
-  char translated; // sent to printer
-} charTranslation;
-
 #ifdef ENABLE_CHARACTER_TRANSLATION
+  typedef struct {
+    char incoming; // coming in from serial
+    char translated; // sent to printer
+  } charTranslation;
+
   // From R435 Manual, Page 51, Section C
   // First character is what we receive on serial interface,
   // second is what we will send the the typewriter.
