@@ -120,6 +120,62 @@ typewriter | ascii char
 Ù          | ˚
 */
 
+// The code for Esc/Escape (decimal 27), for processing Epson ESC/P Codes
+#define ESC_CODE 0b00011011
+
+bool inUnderlineMode = false;
+void toggleUnderlineMode(bool state) {
+  Serial.print(F("Setting Underline Mode to "));
+  Serial.println(state);
+  inUnderlineMode = state;
+}
+void toggleUnderlineModeOn() { toggleUnderlineMode(true); }
+void toggleUnderlineModeOff() { toggleUnderlineMode(false); }
+
+bool inDoubleStrikeMode = false;
+void toggleDoubleStrikeMode(bool state) {
+  Serial.print(F("Setting Double-Strike Mode to "));
+  Serial.println(state);
+  inDoubleStrikeMode = state;
+}
+void toggleDoubleStrikeModeOn() { toggleDoubleStrikeMode(true); }
+void toggleDoubleStrikeModeOff() { toggleDoubleStrikeMode(false); }
+
+typedef struct {
+  byte first;
+  uint8_t (*hFunc) ();
+} EscHandler;
+
+const EscHandler escHandlers[] {
+    {52, &toggleUnderlineModeOn},  // actually italic, using underscore instead
+    {53, &toggleUnderlineModeOff}, // actually italic, using underscore instead
+    {69, &toggleDoubleStrikeModeOn}, // semi-bold
+    {70, &toggleDoubleStrikeModeOff}, //semi-bold
+    {71, &toggleDoubleStrikeModeOn},
+    {72, &toggleDoubleStrikeModeOff},
+};
+
+/*
+
+Other misc codes to test:
+8   backspace
+7   beep or bell
+10  line feed (new line)
+11  down tab as set? What's this?
+12  form feed
+19  deselect printer (will that exit offline mode?)
+
+...if we change this code to buffer whole lines (and not print characters as
+soon as they are received), codes like this could be useful:
+127 Empty the print buffer/erase buffer from last character
+24  erase buffer from last line
+
+
+*/
+
+// Are we currently in Escape-code mode?
+bool currentEscMode = false;
+
 void togglePin(uint8_t pinNum) {
   digitalWrite(pinNum, !digitalRead(pinNum));
 }
@@ -238,12 +294,41 @@ void sendByte(char outbound) {
 }
 
 char incomingByte;
+bool lastEscCodeHandled = false;
+
 void relayLoop() {
   while( Serial.available() > 0 ) {
     incomingByte = Serial.read();
 
     if (incomingByte == 0b00000000)
       continue;
+
+    if (currentEscMode) {
+      // We're in escape mode
+      // Find the handler for this key code
+      for (uint8_t idx; idx < sizeof(escHandlers); idx++) {
+        if (escHandlers[idx].first == incomingByte) {
+          escHandlers[idx].hFunc();
+          lastEscCodeHandled = true;
+          break;
+        }
+      }
+
+      if (!lastEscCodeHandled) {
+        Serial.print(F("No handler for "));
+        Serial.println(incomingByte);
+      }
+      lastEscCodeHandled = false;
+
+      currentEscMode = false;
+      continue;
+    }
+
+    // We got an "escape code", so toggle the mode and loop again
+    if (incomingByte == ESC_CODE) {
+      currentEscMode = true;
+      continue;
+    }
 
     sendByte(incomingByte);
 
