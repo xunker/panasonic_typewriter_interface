@@ -116,7 +116,7 @@ char messages[][54] = {
   "The danger is in a particular location.",
   "It increases towards a center.",
   "The center of danger is here,",
-  "Of a particular size and shape, and below us.",
+  "of a particular size and shape, and below us.",
   "",
   "The danger is still present,",
   "in your time, as it was in ours.",
