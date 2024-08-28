@@ -2,10 +2,12 @@
 
 https://github.com/xunker/panasonic_typewriter_interface
 
-Print text using the Interface Port of your compatible Panasonic KX-R Daisywheel
-or Thermal typewriter, or KX-WD55 printererer. Emulates the serial/RS-232 function of KX-R60, RP-K100, or RP-K105 interface adapters.
+Print text using the Interface Port of your compatible Panasonic KX-R/KX-W
+Daisywheel or Thermal typewriter, or KX-WD55 printererer. Emulates the
+serial/RS-232 function of the KX-R60, RP-K100, or RP-K105 interface adapters.
 
-Use your 🏋️heavy🥌 and 🐢slow🐌 typewriter as a inconvenient, inflexible, single-page printer!
+Use your 🏋️heavy🥌 and 🐢slow🐌 typewriter as a noisy, inconvenient, inflexible,
+single-page printer!
 
 ## Compatibility
 
@@ -115,8 +117,9 @@ service manual:
 
 ## Code
 
-The included code is a basic proof-of-concept and will only print lines that are
-hard-coded in the source and uploaded to Arduino.
+The included code will read data from the `Serial` device (usually USB Serial)
+and relay that to the typewriter in the correct format.
+
 
 ### Configure
 
@@ -135,10 +138,11 @@ and change the following lines as appropriate:
 CHECK WHAT KIND OF CABLE YOU HAVE, and remember that a Macintosh-style printer
 cable likely has several pins swapped.
 
-To change the text that is printed, also edit the strings in the
-`char messages[][54] = { ... }` array.
-
 Once you're done, upload it to your Arduino-compatible MCU.
+
+There is also a "Demo Mode" that will just print text automatically and not
+wait for input over serial; enable that by uncommenting `// #define TEST_MODE`
+in panasonic_typewriter_interface.ino.
 
 ### Printerering
 
@@ -155,26 +159,27 @@ Once in "On-Line Mode", connect pin A7 on your Arduino to ground (or whatever)
 pin you assigned to `GO_PIN`. As long as that pin is grounded, sentences will
 keep being sent to the typewriter.
 
+Next, open a serial connection to your MCU (using the built-in Serial Console
+in the Arduino IDE works well) and sent some text -- with luck, you'll see it
+appear in your paper!
+
 ## TODO
 
-* Build a real serial interface that accept serial data over USB/RxD and sends
-  it to the typewriter
+### Need
+
+* Get special/accented character conversion functioning
 * Add more LED options, to reflect the states of the various pins
   * or an I2C/SPI display?
-* Automatic detection of a crossover MiniDIN-8 cable by checking which of
-  Pin 3 or 5 are connected to +12V, and automatically adjust the other pins accordingly
 * Convert special characters like tab ("\t") to spaces, to prevent typewriter
   from going crazy if no tabs have been set
-* Convert upper-ascii (e.g. accented) characters to correct character for
-  printer
+
+### Want
+* Software configuration option via serial login
 * Automatically insert correct line-breaks, depending on CPI switch setting
   - May not be needed, Windows' generic/text only printer [automatically wraps
   at 80 characters](https://support.microsoft.com/en-us/topic/printing-wide-carriage-with-generic-text-only-print-driver-3bdb3c49-abdd-597d-6416-5d460efab182)
 * Automatically pause printing to insert next sheet of paper, based on
   line-spacing switch setting
-* Accept [ESP/P](https://en.wikipedia.org/wiki/ESC/P) or
-  [Epson-style control codes](https://stackoverflow.com/questions/6025191/what-characters-do-you-send-to-a-generic-text-only-printer-to-print-bolded-and)
-  and overstrike as appropriate
 
 ## License
 
