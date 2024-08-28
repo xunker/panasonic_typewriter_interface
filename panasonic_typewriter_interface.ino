@@ -77,7 +77,7 @@ Verify the voltages of ALL PINS before connecting typerwiter to your device.
 #define ON_LINE_PIN 5 // Output, active LOW
 #define STB_PIN 7  // Output, active LOW
 #define ACK_PIN 2 // Input, active LOW
-#define TXD_PIN 6 // Output, active LOW
+#define TXD_PIN 6 // Output; HIGH = 1, LOW = 0
 
 #define GO_PIN A7 // trigger printing to begin when this is pulled low
 
