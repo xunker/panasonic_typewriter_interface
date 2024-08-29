@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name "KMDGX-8S-AS")(type "KiCad")(uri "${KIPRJMOD}/KMDGX-8S-AS/KMDGX-8S-AS.kicad_sym")(options "")(descr ""))
+)
