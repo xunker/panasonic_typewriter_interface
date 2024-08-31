@@ -117,6 +117,44 @@ const uint32_t baudRates[] ={
 uint8_t serialBaudIdx = DEFAULT_BAUD_IDX;
 uint32_t serialBaud = baudRates[DEFAULT_BAUD_IDX];
 
+
+typedef struct {
+  char *label;
+  uint8_t value;
+} serialConfigOption;
+
+const serialConfigOption serialConfigs[] = {
+  { "5n1", SERIAL_5N1 },
+  { "6n1", SERIAL_6N1 },
+  { "7n1", SERIAL_7N1 },
+  { "8n1", SERIAL_8N1 }, // default
+  { "5n2", SERIAL_5N2 },
+  { "6n2", SERIAL_6N2 },
+  { "7n2", SERIAL_7N2 },
+  { "8n2", SERIAL_8N2 },
+  { "5e1", SERIAL_5E1 },
+  { "6e1", SERIAL_6E1 },
+  { "7e1", SERIAL_7E1 },
+  { "8e1", SERIAL_8E1 },
+  { "5e2", SERIAL_5E2 },
+  { "6e2", SERIAL_6E2 },
+  { "7e2", SERIAL_7E2 },
+  { "8e2", SERIAL_8E2 },
+  { "5o1", SERIAL_5O1 },
+  { "6o1", SERIAL_6O1 },
+  { "7o1", SERIAL_7O1 },
+  { "8o1", SERIAL_8O1 },
+  { "5o2", SERIAL_5O2 },
+  { "6o2", SERIAL_6O2 },
+  { "7o2", SERIAL_7O2 },
+  { "8o2", SERIAL_8O2 }
+};
+
+#define DEFAULT_SERIAL_CONFIG_IDX 3
+uint8_t serialConfigIdx = DEFAULT_SERIAL_CONFIG_IDX;
+uint8_t serialConfig = serialConfigs[serialConfigIdx].value;
+
+
 /* Enable upper-ascii character translation. THIS IS CURRENTLY BROKEN. */
 // #define ENABLE_CHARACTER_TRANSLATION
 
@@ -196,9 +234,8 @@ void setup() {
   #endif
 
 
-  #ifdef ENABLE_CONSOLE || ENABLE_DEBUGGING
-    Serial.begin(serialBaud);
-  #endif
+
+  Serial.begin(serialBaud, serialConfig);
 }
 
 void loop() {
