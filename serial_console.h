@@ -36,6 +36,14 @@ void configHelp(void) {
     consoleSerial.Print(F("Current config:\r\n"));
     consoleSerial.Print(F("\tbaud\t")); consoleSerial.Print (serialBaud); consoleSerial.Print(F(" (index: "));
     consoleSerial.Print(serialBaudIdx); consoleSerial.Print(F(")\r\n"));
+
+    consoleSerial.Print(F("\tconfig\t"));
+    consoleSerial.Print(serialConfigs[serialConfigIdx].label);
+     consoleSerial.Print(F(" (index: "));
+     consoleSerial.Print(serialConfigIdx);
+    consoleSerial.Print(F(")\r\n"));
+
+    consoleSerial.Print(F("\r\n"));
   }
 
   void configInfo(void) {
@@ -91,8 +99,39 @@ void configHelp(void) {
     consoleSerial.Print(F(LINE_ENDING));
   }
 
+  void configConfig(void) {
+    char * sParam;
+    sParam = consoleSerial.ReadNext();
+    if (!( sParam == NULL )) {
+      short newConfigIdx = -1;
+      for (uint8_t idx = 0; idx < (sizeof(serialConfigs)/sizeof(serialConfigs[0])); idx++) {
+        if (strcmp(serialConfigs[idx].label, sParam) == 0) {
+          newConfigIdx = idx;
+        }
+      }
+
+      if (newConfigIdx < 0) {
+        consoleSerial.Print (F("Error: valid configs are:\r\n"));
+        for (uint8_t idx = 0; idx < (sizeof(serialConfigs)/sizeof(serialConfigs[0])); idx++) {
+          consoleSerial.Print(serialConfigs[idx].label); consoleSerial.Print(F(" "));
+        }
+        consoleSerial.Print(F("\r\n"));
+
+        return;
+      }
+
+      serialConfig = serialConfigs[newConfigIdx].value;
+      serialConfigIdx = newConfigIdx;
+    }
+
+    consoleSerial.Print(serialConfigs[serialConfigIdx].label);
+    consoleSerial.Print(F(LINE_ENDING));
+  }
+
   void configWrite(void) {
     EEPROM.put(BAUD_IDX_ADDR, serialBaudIdx);
+    EEPROM.put(CONFIG_IDX_ADDR, serialConfigIdx);
+
     #ifdef ENABLE_CONSOLE
       consoleSerial.Print (F("Written.\r\n"));
     #endif
@@ -105,12 +144,21 @@ void configHelp(void) {
     #endif
   }
 
+  void configReset(void) {
+    resetEeprom();
+    #ifdef ENABLE_CONSOLE
+      consoleSerial.Print (F("Reset.\r\n"));
+    #endif
+  }
+
   void serialConsoleSetup() {
     consoleSerial.AddCmd ( F ( "?" ) , SERIALCMD_FROMALL, configHelp );
     consoleSerial.AddCmd ( F ( "show" ) , SERIALCMD_FROMALL, configShow );
     consoleSerial.AddCmd ( F ( "info" ) , SERIALCMD_FROMALL, configInfo );
     consoleSerial.AddCmd ( F ( "baud" ) , SERIALCMD_FROMALL, configBaud );
+    consoleSerial.AddCmd ( F ( "config" ) , SERIALCMD_FROMALL, configConfig );
     consoleSerial.AddCmd ( F ( "write" ) , SERIALCMD_FROMALL, configWrite );
+    consoleSerial.AddCmd ( F ( "reset" ) , SERIALCMD_FROMALL, configReset );
     consoleSerial.AddCmd ( F ( "load" ) , SERIALCMD_FROMALL, configLoad );
   }
 
