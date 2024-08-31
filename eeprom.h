@@ -17,18 +17,8 @@
     serialBaud = baudRates[serialBaudIdx];
   }
 
-  void eeprom_setup() {
+  void eepromSetup() {
     loadEeprom();
-  }
-
-  void configWrite(void) {
-    EEPROM.put(BAUD_IDX_ADDR, serialBaudIdx);
-    configSerial.Print (F("Written.\r\n"));
-  }
-
-  void configLoad(void) {
-    loadEeprom();
-    configSerial.Print (F("Loaded.\r\n"));
   }
 
 #endif
