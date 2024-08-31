@@ -74,6 +74,10 @@ PIN 5 may carry 12V! That voltage can COMPLETELY RUIN your microcontroller!
 Verify the voltages of ALL PINS before connecting typerwiter to your device.
 
 */
+
+// Enable serial configuration console
+#define SERIAL_CONFIG
+
 #define ON_LINE_PIN 5 // Output, active LOW
 #define STB_PIN 7  // Output, active LOW
 #define ACK_PIN 2 // Input, active LOW
@@ -96,6 +100,43 @@ the character
 /* Uncomment TEST_MODE to make this interface work in a demo mode that will
    print various test strings */
 // #define TEST_MODE
+
+// Enable serial debugging
+// #define ENABLE_DEBUGGING
+
+#ifdef SERIAL_CONFIG
+#include <SerialCmd.h> // https://github.com/gpb01/SerialCmd
+
+#define SERIALCMD_FORCEUC 0 // do not force uppercase commands
+#define SERIALCMD_CR      0x0D // command terminator, Carriage Return (char)
+#define SERIALCMD_SPACE   " " // Use space as command->separator
+#define LINE_ENDING "\r\n"
+
+SerialCmd configSerial( Serial, SERIALCMD_CR, SERIALCMD_SPACE );
+
+bool consoleEnabled = true; // to be moved elsewhere, trigged by button or something
+bool consoleEnMessageSent = false;
+#endif
+
+/*
+ serialBaud is the baud for Serial.begin. Possible values are:
+
+ 2400, 4800, 9600, 19200, 31250, 38400, and 57600.
+ Speeds of 748800 and 115200 are possible but not recommened on the ATmega.
+*/
+#define DEFAULT_BAUD_IDX 5
+const uint32_t baudRates[] ={
+  4800, 9600, 19200, 31250, 38400, 57600, 748800, 115200
+};
+uint8_t serialBaudIdx = DEFAULT_BAUD_IDX;
+uint32_t serialBaud = baudRates[DEFAULT_BAUD_IDX];
+
+#define ENABLE_EEPROM
+
+#include "eeprom.h"
+
+
+#include "debugging.h"
 
 /* Enable upper-ascii character translation. THIS IS CURRENTLY BROKEN. */
 // #define ENABLE_CHARACTER_TRANSLATION
@@ -196,9 +237,9 @@ void waitForACKToGo(bool pinState) {
     waitForSignalToSettle();
 
     if (waitCounter++ >= 100) {
-      Serial.print(millis());
-      Serial.print(F(" waiting for ACK to go "));
-      Serial.println(pinState);
+      debug(millis());
+      debugf(" waiting for ACK to go ");
+      debugln(pinState);
       waitCounter = 0;
     }
   }
@@ -218,7 +259,63 @@ void waitForSignalToSettle() {
   delay(SIGNAL_SETTLE_DELAY);
 }
 
+#ifdef SERIAL_CONFIG
+  void configHelp(void) {
+    configSerial.Print(F("Commands:\r\n"));
+    configSerial.Print(F("baud [rate]\tget or set the Serial Baud rate\r\n"));
+    configSerial.Print(F("show\t\tprint current config\r\n"));
+    #ifdef ENABLE_EEPROM
+      configSerial.Print(F("load\t\tload config from EEPROM\r\n"));
+      configSerial.Print(F("write\t\twrite current config to EEPROM\r\n"));
+    #endif
+    configSerial.Print(F("?\t\tlist commands\r\n"));
+  }
+
+  void configShow(void) {
+    configSerial.Print(F("Current config:\r\n"));
+    configSerial.Print(F("\tbaud\t")); configSerial.Print (serialBaud); configSerial.Print(F(" (index: "));
+    configSerial.Print(serialBaudIdx); configSerial.Print(F(")\r\n"));
+  }
+
+  void configBaud(void) {
+    char * sParam;
+    sParam = configSerial.ReadNext();
+    if (!( sParam == NULL )) {
+      uint32_t newSerialBaud = strtoul ( sParam, NULL, 10 ); // (str, str_end char, base)
+      short newSerialBaudIdx = -1;
+      for (uint8_t idx = 0; idx < (sizeof(baudRates)/sizeof(baudRates[0])); idx++) {
+        if (baudRates[idx] == newSerialBaud) {
+          newSerialBaudIdx = idx;
+        }
+      }
+
+      if (newSerialBaudIdx < 0) {
+        configSerial.Print (F("Error: valid baud rates are:\r\n"));
+        for (uint8_t idx = 0; idx < (sizeof(baudRates)/sizeof(baudRates[0])); idx++) {
+          configSerial.Print(baudRates[idx]); configSerial.Print(F(" "));
+        }
+        configSerial.Print(F("\r\n"));
+
+        return;
+      }
+
+      serialBaud = baudRates[newSerialBaudIdx];
+      serialBaudIdx = newSerialBaudIdx;
+    }
+
+    configSerial.Print(serialBaud);
+    configSerial.Print(F(LINE_ENDING));
+  }
+
+#endif
+
+
+
 void setup() {
+  // delay at boot, just in case you b0rked something, to give you time to
+  // upload some new code
+  delay(1000);
+
   pinMode(LED_BUILTIN, OUTPUT);
 
   // Pin Modes for typewriter
@@ -234,9 +331,29 @@ void setup() {
   TXDPin(HIGH);
   LEDPin(LOW);
 
-  delay(1000);
-  Serial.begin(57600);
+  #ifdef ENABLE_EEPROM
+    eeprom_setup();
+  #endif
+
+  #ifdef SERIAL_CONFIG
+    configSerial.AddCmd ( F ( "?" ) , SERIALCMD_FROMALL, configHelp );
+    configSerial.AddCmd ( F ( "show" ) , SERIALCMD_FROMALL, configShow );
+    configSerial.AddCmd ( F ( "baud" ) , SERIALCMD_FROMALL, configBaud );
+    configSerial.AddCmd ( F ( "write" ) , SERIALCMD_FROMALL, configWrite );
+    configSerial.AddCmd ( F ( "load" ) , SERIALCMD_FROMALL, configLoad );
+    configSerial.AddCmd ( F ( "testread" ) , SERIALCMD_FROMALL, configTestRead );
+    configSerial.AddCmd ( F ( "testwrite" ) , SERIALCMD_FROMALL, configTestWrite );
+  #endif
+
+
+  #ifdef SERIAL_CONFIG || ENABLE_DEBUGGING
+    Serial.begin(serialBaud);
+  #endif
 }
+
+#ifdef SERIAL_CONFIG
+int8_t ret;
+#endif
 
 void loop() {
   if (digitalRead(GO_PIN) == LOW) {
@@ -247,9 +364,22 @@ void loop() {
     #endif
 
   } else {
-    // Serial.print(millis());
-    // Serial.println(F(" Waiting for go..."));
-    delay(1000);
+    #ifdef SERIAL_CONFIG
+      if (!consoleEnMessageSent) {
+        configSerial.Print ( F("\r\nConfig console active.\r\n") );
+        consoleEnMessageSent = true;
+      }
+
+      ret = configSerial.ReadSer();
+      if ( ret == 0 ) {
+        configSerial.Print ( F("ERROR: Urecognized command. \r\n") );
+      }
+      delay(100);
+    #else
+      delay(1000);
+      debug(millis());
+      debugfln(" Waiting for go...");
+    #endif
   }
 }
 
@@ -258,11 +388,11 @@ char translatedChar = ' ';
 #ifdef ENABLE_CHARACTER_TRANSLATION
   char translateCharacter(char incoming) {
     if (incoming >= 0xA0) {
-      Serial.print(F("translating "));
-      Serial.print(incoming);
-      Serial.print(F(" ("));
-      Serial.print(incoming, DEC);
-      Serial.print(F("): "));
+      debugf("translating ");
+      debug(incoming);
+      debugf(" (");
+      debug(incoming, DEC);
+      debugf("): ");
       translatedChar = ' ';
       // translate the incoming byte in to requested charater for typewriter.
       for (uint8_t idx; idx < sizeof(charTranslations); idx++) {
@@ -271,10 +401,10 @@ char translatedChar = ' ';
       }
 
       if (translatedChar == ' ') {
-        Serial.println(F("not found"));
+        debugfln("not found");
         translatedChar = incoming;
       } else {
-        Serial.println(translatedChar);
+        debugln(translatedChar);
       }
     }
     return translatedChar;
@@ -287,8 +417,9 @@ char translatedChar = ' ';
 
 void sendByte(char outbound) {
   translatedChar = translateCharacter(outbound);
-  Serial.print(translatedChar);
-  Serial.print(F(" "));
+  debug(translatedChar);
+  debugf(" ");
+
   /*
   ON_LINE goes LOW at the beginning of the BYTE transmission, and remains
   high until all bits of the byte are transmitted.
@@ -306,10 +437,10 @@ void sendByte(char outbound) {
     /* Send the bit. Compatible with whatever character set Arduino uses. */
     if (bitRead(translatedChar, bitPos)) {
       TXDPin(HIGH);
-      Serial.print(F("1"));
+      debugf("1");
     } else {
       TXDPin(LOW);
-      Serial.print(F("0"));
+      debugf("0");
     }
     waitForSignalToSettle();
 
@@ -345,7 +476,7 @@ void processByte(char incomingByte) {
 
   sendByte(incomingByte);
 
-  Serial.print(F("\n"));
+  debugf("\n");
 
   LEDPin(LOW);
 }
