@@ -168,18 +168,27 @@ appear in your paper!
 ### Need
 
 * Get special/accented character conversion functioning
-* Add more LED options, to reflect the states of the various pins
-  * or an I2C/SPI display?
 * Convert special characters like tab ("\t") to spaces, to prevent typewriter
   from going crazy if no tabs have been set
+  * ability to set tab-to-space count in serial console
+* mode button support
+  * long press triggers demo mode
+
 
 ### Want
-* Software configuration option via serial login
+
+* I2C display?
 * Automatically insert correct line-breaks, depending on CPI switch setting
   - May not be needed, Windows' generic/text only printer [automatically wraps
   at 80 characters](https://support.microsoft.com/en-us/topic/printing-wide-carriage-with-generic-text-only-print-driver-3bdb3c49-abdd-597d-6416-5d460efab182)
 * Automatically pause printing to insert next sheet of paper, based on
   line-spacing switch setting
+  * MODE button becomes "Continue" button
+* add CTS/RTS/DTR/DSR pins to serial breakout
+  * for old computers
+  * for signaling buffer is full
+  * for signaling Paper Out
+* mode button cycles throughCPI/Line Space settings? Need display for this?
 
 ## License
 
