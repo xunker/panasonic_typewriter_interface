@@ -83,7 +83,19 @@ Verify the voltages of ALL PINS before connecting typerwiter to your device.
 #define ACK_PIN 2 // Input, active LOW
 #define TXD_PIN 6 // Output; HIGH = 1, LOW = 0
 
-#define GO_PIN A7 // trigger printing to begin when this is pulled low
+// For adapter PCB
+// #define ON_LINE_PIN A0 // Output, active LOW
+// #define STB_PIN     A2 // Output, active LOW
+// #define ACK_PIN     A3 // Input, active LOW
+// #define TXD_PIN     A1 // Output; HIGH = 1, LOW = 0
+
+#define GO_PIN A6 // trigger printing to begin when this is pulled low
+
+#define MODE_PIN A7 // trigger printing to begin when this is pulled low
+
+/* uncomment to have seprate LEDs for each typewriter signal, otherwise only
+   LED_BUILTIN will be enabled */
+#define ENABLE_MULTIPLE_LEDS
 
 /*
 SIGNAL_SETTLE_DELAY: Used in waitForSignalToSettle(), see that function for
@@ -160,22 +172,42 @@ uint8_t serialConfig = serialConfigs[serialConfigIdx].value;
 
 #define ENABLE_EEPROM
 
+#ifdef ENABLE_MULTIPLE_LEDS
+  #define ON_LINE_LED D8
+  #define STB_LED     D6
+  #define ACK_LED     D2
+  #define TXD_LED     D3
+  #define LED_BUILTIN D13
+#endif
+
 #include "eeprom.h"
 #include "debugging.h"
 #include "serial_console.h"
 #include "conversion.h"
+#include "multiple_leds.h"
 
 void togglePin(uint8_t pinNum) { digitalWrite(pinNum, !digitalRead(pinNum)); }
 void toggleLED() { togglePin(LED_BUILTIN); }
 
-void onLinePin(bool pinState) { digitalWrite(ON_LINE_PIN, pinState); }
-void STBPin(bool pinState) { digitalWrite(STB_PIN, pinState); }
-void ACKPin(bool pinState) { digitalWrite(ACK_PIN, pinState); }
-void TXDPin(bool pinState) { digitalWrite(TXD_PIN, pinState); }
-void LEDPin(bool pinState) { digitalWrite(LED_BUILTIN, pinState); }
+void onLinePin(bool pinState) {
+  digitalWrite(ON_LINE_PIN, pinState);
+  onLineLed(!pinState); // Signal is Active Low
+}
+void STBPin(bool pinState) {
+  digitalWrite(STB_PIN, pinState);
+  STBLed(!pinState); // Signal is Active Low
+}
+void ACKPin(bool pinState) {
+  digitalWrite(ACK_PIN, pinState);
+  ACKLed(!pinState); // Signal is Active Low
+}
+void TXDPin(bool pinState) {
+  digitalWrite(TXD_PIN, pinState);
+  TXDLed(pinState);
+}
 
 void waitForACKToGo(bool pinState) {
-  LEDPin(HIGH);
+  StatusLed(HIGH);
 
   uint8_t waitCounter = 0;
   while(digitalRead(ACK_PIN) == !pinState) {
@@ -188,7 +220,7 @@ void waitForACKToGo(bool pinState) {
       waitCounter = 0;
     }
   }
-  LEDPin(LOW);
+  StatusLed(LOW);
 }
 
 /*
@@ -223,7 +255,7 @@ void setup() {
   onLinePin(HIGH);
   STBPin(HIGH);
   TXDPin(HIGH);
-  LEDPin(LOW);
+  StatusLed(LOW);
 
   #ifdef ENABLE_EEPROM
     eepromSetup();
@@ -233,7 +265,7 @@ void setup() {
     serialConsoleSetup();
   #endif
 
-
+  led_setup();
 
   Serial.begin(serialBaud, serialConfig);
 }
@@ -307,7 +339,7 @@ void sendByte(char outbound) {
     /* Set STB to HIGH to tell the typewriter to latch the TXD value. */
     STBPin(HIGH);
 
-    LEDPin(LOW);
+    StatusLed(LOW);
 
     waitForSignalToSettle();
 
@@ -328,7 +360,7 @@ void processByte(char incomingByte) {
 
   debugf("\n");
 
-  LEDPin(LOW);
+  StatusLed(LOW);
 }
 
 void relayLoop() {
