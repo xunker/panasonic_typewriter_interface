@@ -173,10 +173,18 @@ uint8_t serialConfig = serialConfigs[serialConfigIdx].value;
 #define ENABLE_EEPROM
 
 #ifdef ENABLE_MULTIPLE_LEDS
-  #define ON_LINE_LED D8
-  #define STB_LED     D6
-  #define ACK_LED     D2
-  #define TXD_LED     D3
+  /* these are for the kicad adapter board */
+  // #define ON_LINE_LED D8
+  // #define STB_LED     D6
+  // #define ACK_LED     D2
+  // #define TXD_LED     D3
+  // #define LED_BUILTIN D13
+
+  /* these are for the breadboard test */
+  #define ON_LINE_LED D12
+  #define STB_LED     D11
+  #define ACK_LED     D10
+  #define TXD_LED     D9
   #define LED_BUILTIN D13
 #endif
 
@@ -238,10 +246,6 @@ void waitForSignalToSettle() {
 
 
 void setup() {
-  // delay at boot, just in case you b0rked something, to give you time to
-  // upload some new code
-  delay(1000);
-
   pinMode(LED_BUILTIN, OUTPUT);
 
   // Pin Modes for typewriter
