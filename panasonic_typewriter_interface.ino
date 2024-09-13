@@ -188,11 +188,14 @@ uint8_t serialConfig = serialConfigs[serialConfigIdx].value;
   #define LED_BUILTIN D13
 #endif
 
+#define ENABLE_MODE_BUTTON
+
 #include "eeprom.h"
 #include "debugging.h"
 #include "serial_console.h"
 #include "conversion.h"
 #include "multiple_leds.h"
+#include "mode_button.h"
 
 void togglePin(uint8_t pinNum) { digitalWrite(pinNum, !digitalRead(pinNum)); }
 void toggleLED() { togglePin(LED_BUILTIN); }
@@ -269,12 +272,31 @@ void setup() {
     serialConsoleSetup();
   #endif
 
-  led_setup();
+  #ifdef ENABLE_MODE_BUTTON
+    modeButtonSetup();
+  #endif
+
+  ledSetup();
 
   Serial.begin(serialBaud, serialConfig);
 }
 
+#ifndef ENABLE_CONSOLE
+  unsigned long currentMillis = 0;
+  unsigned long nextSerialConsoleStatus = 0;
+  #define SEND_SERIAL_CONSOLE_STATUS_EVERY 1000 // milliseconds
+
+#endif
+
 void loop() {
+  #ifndef ENABLE_CONSOLE
+    currentMillis = millis();
+  #endif
+
+  #ifdef ENABLE_MODE_BUTTON
+    modeButtonLoop();
+  #endif
+
   if (digitalRead(GO_PIN) == LOW) {
     #ifdef TEST_MODE
       testLoop();
@@ -286,9 +308,12 @@ void loop() {
     #ifdef ENABLE_CONSOLE
       serialConsoleLoop();
     #else
-      delay(1000);
-      debug(millis());
-      debugfln(" Waiting for go...");
+      if (nextSerialConsoleStatus < currentMillis) {
+        nextSerialConsoleStatus = currentMillis + SEND_SERIAL_CONSOLE_STATUS_EVERY;
+
+        debug(currentMillis);
+        debugfln(" Waiting for go...");
+      }
     #endif
   }
 }
