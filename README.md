@@ -172,8 +172,7 @@ appear in your paper!
   from going crazy if no tabs have been set
   * ability to set tab-to-space count in serial console
 * mode button support
-  * long press triggers demo mode
-
+  * long press triggers demo while in "run" mode
 
 ### Want
 
