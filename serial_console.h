@@ -235,7 +235,7 @@ void serialConsoleLoop() {
 
   ret = consoleSerial.ReadSer();
   if ( ret == 0 ) {
-    consolePrintln( F("ERROR: Urecognized command.") );
+    consolePrintln( F("ERROR: Unrecognized command.") );
   }
   delay(100);
 }
