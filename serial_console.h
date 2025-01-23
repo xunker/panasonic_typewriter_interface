@@ -84,44 +84,49 @@ void configHelp(void) {
   void configShow(void) {
     currentCommandBanner(F("Show Settings"));
 
-    consoleSerial.Print(F("\tbaud\t")); consoleSerial.Print (serialBaud); consoleSerial.Print(F(" (index: "));
-    consoleSerial.Print(serialBaudIdx); consolePrintln();
+    consolePrint(F("\tbaud\t"));
+    consolePrint (serialBaud);
+    consolePrint(F(" (index: "));
+    consolePrint(serialBaudIdx);
+    consolePrintln();
 
-    consoleSerial.Print(F("\tconfig\t"));
-    consoleSerial.Print(serialConfigs[serialConfigIdx].label);
-     consoleSerial.Print(F(" (index: "));
-     consoleSerial.Print(serialConfigIdx);
+    consolePrint(F("\tconfig\t"));
+    consolePrint(serialConfigs[serialConfigIdx].label);
+    consolePrint(F(" (index: "));
+    consolePrint(serialConfigIdx);
     consolePrintln();
   }
 
   void configInfo(void) {
     currentCommandBanner(F("System Info"));
-    consoleSerial.Print(F("Firmware version: "));
-    consoleSerial.Print(F(FW_VERSION));
-    consoleSerial.Print(F(LINE_ENDING));
+    consolePrint(F("Firmware version: "));
+    consolePrint(F(FW_VERSION));
+    consolePrintln();
 
-    consoleSerial.Print(F("Licensed under GNU GPL V3\r\n\r\n"));
+    consolePrintln(F("Licensed under GNU GPL V3\r\n"));
 
-    consoleSerial.Print(F("Compiled with:\r\n"));
+    consolePrintln(F("Compiled with:"));
     #ifdef ENABLE_DEBUGGING
-      consoleSerial.Print(F("\tserial debugging\r\n"));
+      consolePrintln(F("\tserial debugging"));
     #endif
 
     #ifdef ENABLE_CONSOLE
-      consoleSerial.Print(F("\tserial console\r\n"));
+      consolePrintln(F("\tserial console"));
     #endif
 
     #ifdef ENABLE_EEPROM
-      consoleSerial.Print(F("\teeprom support\r\n"));
+      consolePrintln(F("\teeprom support"));
     #endif
 
-    consoleSerial.Print(F("Memory:\r\n"));
+    consolePrintln(F("Memory:"));
 
-    consoleSerial.Print(F("\tStack size:\t")); consoleSerial.Print((int) RAMEND - (int)SP); consoleSerial.Print(F(LINE_ENDING));
+    consolePrint(F("\tStack size:\t")); consoleSerial.Print((int) RAMEND - (int)SP); consolePrintln();
 
-    consoleSerial.Print(F("\tFree ram:\t")); consoleSerial.Print((int) SP - (int) (__brkval == 0 ? (int)&__heap_start : (int)__brkval)); consoleSerial.Print(F(LINE_ENDING));
+    consolePrint(F("\tFree ram:\t")); consoleSerial.Print((int) SP - (int) (__brkval == 0 ? (int)&__heap_start : (int)__brkval)); consolePrintln();
 
-    consoleSerial.Print(F("\tSRAM size:\t")); consoleSerial.Print((int) RAMEND - (int) &__data_start); consoleSerial.Print(F(LINE_ENDING));
+    consolePrint(F("\tSRAM size:\t")); consoleSerial.Print((int) RAMEND - (int) &__data_start); consolePrintln();
+
+    consolePrint(F("Uptime: ")); consoleSerial.Print(millis()); consolePrintln();
   }
 
   void configBaud(void) {
@@ -137,11 +142,11 @@ void configHelp(void) {
       }
 
       if (newSerialBaudIdx < 0) {
-        consoleSerial.Print (F("Error: valid baud rates are:\r\n"));
+        consolePrintln(F("Error: valid baud rates are:"));
         for (uint8_t idx = 0; idx < (sizeof(baudRates)/sizeof(baudRates[0])); idx++) {
-          consoleSerial.Print(baudRates[idx]); consoleSerial.Print(F(" "));
+          consolePrint(baudRates[idx]); consolePrint(F(" "));
         }
-        consoleSerial.Print(F(LINE_ENDING));
+        consolePrintln();
 
         return;
       }
@@ -152,7 +157,7 @@ void configHelp(void) {
 
     currentCommandBanner(F("Serial Baud"));
     consoleSerial.Print(serialBaud);
-    consoleSerial.Print(F(LINE_ENDING));
+    consolePrintln();
   }
 
   void configConfig(void) {
@@ -169,9 +174,9 @@ void configHelp(void) {
       if (newConfigIdx < 0) {
         consoleSerial.Print (F("Error: valid configs are:\r\n"));
         for (uint8_t idx = 0; idx < (sizeof(serialConfigs)/sizeof(serialConfigs[0])); idx++) {
-          consoleSerial.Print(serialConfigs[idx].label); consoleSerial.Print(F(" "));
+          consoleSerial.Print(serialConfigs[idx].label); consolePrint(F(" "));
         }
-        consoleSerial.Print(F(LINE_ENDING));
+        consolePrintln();
 
         return;
       }
@@ -182,7 +187,7 @@ void configHelp(void) {
 
     currentCommandBanner(F("Serial Config"));
     consoleSerial.Print(serialConfigs[serialConfigIdx].label);
-    consoleSerial.Print(F(LINE_ENDING));
+    consolePrintln();
   }
 
   void configWrite(void) {
@@ -191,7 +196,7 @@ void configHelp(void) {
 
     #ifdef ENABLE_CONSOLE
       currentCommandBanner(F("EEPROM Write"));
-      consoleSerial.Print (F("Written.\r\n"));
+      consolePrintln(F("Written."));
     #endif
   }
 
@@ -199,7 +204,7 @@ void configHelp(void) {
     loadEeprom();
     #ifdef ENABLE_CONSOLE
       currentCommandBanner(F("EEPROM Load"));
-      consoleSerial.Print (F("Loaded.\r\n"));
+      consolePrintln(F("Loaded."));
     #endif
   }
 
@@ -207,7 +212,7 @@ void configHelp(void) {
     resetEeprom();
     #ifdef ENABLE_CONSOLE
       currentCommandBanner(F("EEPROM Reset"));
-      consoleSerial.Print (F("Reset.\r\n"));
+      consolePrintln(F("Reset."));
     #endif
   }
 
@@ -224,13 +229,13 @@ void configHelp(void) {
 
   void serialConsoleLoop() {
     if (!consoleEnMessageSent) {
-      consoleSerial.Print ( F("\r\nConfig console active.\r\n") );
+      consolePrintln( F("\r\nConfig console active.") );
       consoleEnMessageSent = true;
     }
 
     ret = consoleSerial.ReadSer();
     if ( ret == 0 ) {
-      consoleSerial.Print ( F("ERROR: Urecognized command. \r\n") );
+      consolePrintln( F("ERROR: Urecognized command.") );
     }
     delay(100);
   }
