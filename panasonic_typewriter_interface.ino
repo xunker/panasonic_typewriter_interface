@@ -114,7 +114,7 @@ the character
 
 /* Uncomment TEST_MODE to make this interface work in a demo mode that will
    print various test strings */
-#define TEST_MODE
+// #define TEST_MODE
 
 // Enable serial debugging
 // #define ENABLE_DEBUGGING
@@ -291,6 +291,14 @@ void setup() {
 
 #endif
 
+bool inRunMode() {
+  return (digitalRead(GO_PIN) == LOW);
+}
+
+bool inHaltMode() {
+  return (!inRunMode());
+}
+
 void loop() {
   #ifndef ENABLE_CONSOLE
     currentMillis = millis();
@@ -300,7 +308,7 @@ void loop() {
     modeButtonLoop();
   #endif
 
-  if (digitalRead(GO_PIN) == LOW) {
+  if (inRunMode()) {
     #ifdef TEST_MODE
       testLoop();
     #else
