@@ -16,104 +16,14 @@ single-page printer!
 Developed and tested with my KX-R435, and should be compatible with any other
 Panasonic typewriter with the round, 8-pin MiniDIN port.
 
-## KX-W series with DE-9 port
+### KX-W series with DE-9 port
 
 Untested, but should work with machines which have a DE-9 (DB-9) connector.
 
 ## Pinout
 
-### MiniDIN-8
-
-<img src="./kxr-minidin8.png" height="250" alt="Panasonic KX-R MiniDIN-8 interface port pinout">
-
-DIN Pin | X-Over Pin | Signal   | Source  | Direction | Notes
---------|------------|----------|---------|-----------|---------------------
-1       |          2 | gnd      |         |           |
-2       |          1 | gnd      |         |           |
-3       |          5 | gnd      |         |           |
-4       |          4 | ~ACK     | IC1 P16 | out       | (4)
-5       |          3 | +12V     |         |           | For accessory power?
-6       |          8 | TXD      | IC1 P24 | in        | (1,2,3)
-7       |          7 | ~STB     | IC1 P18 | in        | (1,2,3)
-8       |          6 | ~ON_LINE | IC1 P23 | in        | (1,2,3)
-Shield  |     Shield | gnd      |         |           |
-
-#### Notes
-
-* `X-Over Pin` column is the pin number if you are using a Macintosh-style
-  printer cable which swaps pins 1-2, 3-5, and 6-8. These are also called
-  "null-modem" or "cross-over" cables.
-* `Direction` is relative to the Typewriter itself.
-* `Source` is where the pin connects to inside my own R435 typewriter. This
-  will vary depending on model.
-
-1. Routed to typewriter CPU pin through a 100-ohm resistor
-2. 1.5K pull-up to +5v
-3. Decoupled to ground via a 103Z ceramic cap (10K pF, +80%/-20% tolerance)
-4. 10K pull-down to ground
-
-#### IMPORTANT - LOTS OF DANGER!
-
-Pin 5 may carry **12V**! That voltage can COMPLETELY RUIN your microcontroller!
-DO NOT CONNECT THIS PIN DIRECTLY TO YOUR DEVICE! Verify the voltages of ALL PINS before connecting typewriter to your device.
-
-### DE-9 / DB-9
-
-I based my work from [this page](./panasonic_rp-k100_interface_circuit.pdf) out
-of the KX-W50TH/KX-W60TH service manual, so this should also with appropriate
-DE-9 (DB-9) connector. It is, however, **untested**.
-
-DE-9 Pin | Signal   | Direction | Notes
----------|----------|-----------|------
-1        | ~ON_LINE | in        |
-2        | ~STB     | in        |
-3        | ~ACK     | out       |
-4        | ~TXD     | in        |
-5        | n/c      |           |
-6        | n/c      |           |
-7        | n/c      |           |
-8        | n/c      |           |
-9        | gnd      |           |
-
-#### Notes
-
-* `Direction` is relative to the Typewriter itself.
-
-## Theory of Operation
-
-From [this page](./panasonic_rp-k100_interface_circuit.pdf) in the KX-W50TH/W60TH
-service manual:
-
-> 10.2.4 Interface Circuit
->
-> The interface circuit handles the handshaking needed for communication with a
-> I/F Adaptor (RP-K100). The RP-K100 allows interfacing with a host computer.
-> The handshake method is described in the following steps.
->
-> Process:
->
-> (1) The RP-K100 changes the ON LINE signal from H to L indicating that data
-> transmission has started . This ON LINE signal remains Low during the
-> transmission of 1 byte.
->
-> (2) The RP-K100 first sends the LSB (DO) of a transmitted byte to the TXD line
-> and changes the STB signal from H to L. This STB signal is sent to P51 of the
-> CPU which is the interruption.
->
-> (3) In the interruption state, the CPU receives a TXD signal and changes the
-> ACK signal from L to H. This ACK signal is sent to the RP-K100.
->
-> (4) After the RP-K100 has received the ACK signal (L level), the STB signal
-> changes from L to H.
->
-> (5) When the STB signal (High) is sent from the RP-K100, the thermalwriter
-> sends the ACK signal (High) to the RP-K100.
->
-> (6) When the ACK signal is High, the RP-K100 starts to send the next bit of
-> data.
->
-> (7) Once the RP-K100 sends 1 byte of data (8 bits) to the CPU , the ON LINE
-> signal changes from L to H.
+See [PINOUT.md](./PINOUT.md) for detailed information about the typewriter
+connector pinout.
 
 ## Code
 
@@ -121,6 +31,10 @@ The included code will read data from the `Serial` device (usually USB Serial)
 and relay that to the typewriter in the correct format.
 
 ### Configure
+
+NOTE: if you are using the included adapter board, you do not need to do any
+additional configuration. Simply connect your cable and adjust the "Cable Type"
+jumpers so they are both closest to whichever LED (D1 or D2) is lit up.
 
 Edit [panasonic_typewriter_interface.ino](./panasonic_typewriter_interface.ino)
 and change the following lines as appropriate:
@@ -165,10 +79,12 @@ Note, this is a _logic state_, not the _electrical state_. That means for
 active-low pins like ON_LINE, STB, and ACT, a low signal will turn *on* the
 appropriate LED.
 
-### Printerering
+## Printerering (aka, how to use this)
 
 Once the code is uploaded and your Arduino is properly connected to your
 typewriter, turn on your typewriter and load paper as appropriate.
+
+### Set Typewriter to "On-Line Mode"
 
 Then, you must get in to "On-Line Mode". The command varies from model to model,
 so consult the owners manual for more detail. In the case of the KX-R435, you
@@ -176,13 +92,60 @@ enter On-Line Mode by holding down the `CODE` key and then pressing `E`; the LCD
 should now say "On-Line Mode". To exit On-Line mode, or to stop printing, press
 CODE+E again.
 
-Once in "On-Line Mode", connect pin A7 on your Arduino to ground (or whatever)
-pin you assigned to `GO_PIN`. As long as that pin is grounded, sentences will
-keep being sent to the typewriter.
+### Set microcontroller to "RUN" Mode
 
-Next, open a serial connection to your MCU (using the built-in Serial Console
+Once in "On-Line Mode", you'll need to set your Arduino to "Run" mode. If you
+are using the included adapter board, you do this by switching the "RUN/HALT"
+switch to "RUN". If you are have wired your own microcontroller, you will
+connect pin A7 (or whatever pin you assigned to `GO_PIN`) to ground.
+
+Once you switch to "RUN" mode, reset the microcontroller once to ensure it's now in the
+correct mode.
+
+As long as that pin is grounded, sentences will keep being sent to the
+typewriter.
+
+### Send text
+
+Finally, open a serial connection to your MCU (using the built-in Serial Console
 in the Arduino IDE works well) and sent some text -- with luck, you'll see it
 appear in your paper!
+
+## Theory of Operation
+
+From [this page](./panasonic_rp-k100_interface_circuit.pdf) in the KX-W50TH/W60TH
+service manual:
+
+> 10.2.4 Interface Circuit
+>
+> The interface circuit handles the handshaking needed for communication with a
+> I/F Adaptor (RP-K100). The RP-K100 allows interfacing with a host computer.
+> The handshake method is described in the following steps.
+>
+> Process:
+>
+> (1) The RP-K100 changes the ON LINE signal from H to L indicating that data
+> transmission has started . This ON LINE signal remains Low during the
+> transmission of 1 byte.
+>
+> (2) The RP-K100 first sends the LSB (DO) of a transmitted byte to the TXD line
+> and changes the STB signal from H to L. This STB signal is sent to P51 of the
+> CPU which is the interruption.
+>
+> (3) In the interruption state, the CPU receives a TXD signal and changes the
+> ACK signal from L to H. This ACK signal is sent to the RP-K100.
+>
+> (4) After the RP-K100 has received the ACK signal (L level), the STB signal
+> changes from L to H.
+>
+> (5) When the STB signal (High) is sent from the RP-K100, the thermalwriter
+> sends the ACK signal (High) to the RP-K100.
+>
+> (6) When the ACK signal is High, the RP-K100 starts to send the next bit of
+> data.
+>
+> (7) Once the RP-K100 sends 1 byte of data (8 bits) to the CPU , the ON LINE
+> signal changes from L to H.
 
 ## TODO
 
