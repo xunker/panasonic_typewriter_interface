@@ -211,9 +211,10 @@ void STBPin(bool pinState) {
   digitalWrite(STB_PIN, pinState);
   STBLed(!pinState); // Signal is Active Low
 }
-void ACKPin(bool pinState) {
-  digitalWrite(ACK_PIN, pinState);
+bool readACKPin() {
+  bool pinState = digitalRead(ACK_PIN);
   ACKLed(!pinState); // Signal is Active Low
+  return pinState;
 }
 void TXDPin(bool pinState) {
   digitalWrite(TXD_PIN, pinState);
@@ -224,7 +225,7 @@ void waitForACKToGo(bool pinState) {
   StatusLed(HIGH);
 
   uint8_t waitCounter = 0;
-  while(digitalRead(ACK_PIN) == !pinState) {
+  while(readACKPin() == !pinState) {
     waitForSignalToSettle();
 
     if (waitCounter++ >= 100) {
