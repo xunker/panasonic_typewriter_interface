@@ -13,7 +13,7 @@ void StatusLed(bool pinState) { digitalWrite(LED_BUILTIN, pinState);  }
   void TXDLed(bool pinState) { digitalWrite(TXD_LED, pinState); }
 
   void testLeds() {
-    const uint8_t LedPins[] = { LED_BUILTIN, ON_LINE_LED, STB_LED, ACK_LED, TXD_LED };
+    const uint8_t LedPins[] = { LED_BUILTIN, ON_LINE_LED, STB_LED, TXD_LED, ACK_LED };
 
     for (uint8_t i = 0; i < 5; i++) {
       digitalWrite(LedPins[i], HIGH);
