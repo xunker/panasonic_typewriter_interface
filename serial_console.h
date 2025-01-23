@@ -78,7 +78,7 @@ void configHelp(void) {
     consolePrintln(F("\treset\t\treset EEPROM to defaults"));
   #endif
   consolePrintln(F("\tinfo\t\tsystem information"));
-  consolePrintln(F("\t?\t\tlist commands"));
+  consolePrintln(F("\t?\t\tlist commands (this screen)"));
 }
 
 void configShow(void) {
@@ -86,14 +86,14 @@ void configShow(void) {
 
   consolePrint(F("\tbaud\t"));
   consolePrint (serialBaud);
-  consolePrint(F(" (index: "));
-  consolePrint(serialBaudIdx);
+  // consolePrint(F(" index: "));
+  // consolePrint(serialBaudIdx);
   consolePrintln();
 
   consolePrint(F("\tconfig\t"));
   consolePrint(serialConfigs[serialConfigIdx].label);
-  consolePrint(F(" (index: "));
-  consolePrint(serialConfigIdx);
+  // consolePrint(F(" index: "));
+  // consolePrint(serialConfigIdx);
   consolePrintln();
 }
 
