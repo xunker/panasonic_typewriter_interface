@@ -75,19 +75,22 @@ Verify the voltages of ALL PINS before connecting typerwiter to your device.
 
 */
 
+// Version information
+#define FW_VERSION "1.0.0"
+
 // Enable serial configuration console
 #define ENABLE_CONSOLE
 
-#define ON_LINE_PIN 5 // Output, active LOW
-#define STB_PIN 7  // Output, active LOW
-#define ACK_PIN 2 // Input, active LOW
-#define TXD_PIN 6 // Output; HIGH = 1, LOW = 0
+// #define ON_LINE_PIN 5 // Output, active LOW
+// #define STB_PIN 7  // Output, active LOW
+// #define ACK_PIN 2 // Input, active LOW
+// #define TXD_PIN 6 // Output; HIGH = 1, LOW = 0
 
 // For adapter PCB
-// #define ON_LINE_PIN A0 // Output, active LOW
-// #define STB_PIN     A2 // Output, active LOW
-// #define ACK_PIN     A3 // Input, active LOW
-// #define TXD_PIN     A1 // Output; HIGH = 1, LOW = 0
+#define ON_LINE_PIN A0 // Output, active LOW
+#define STB_PIN     A2 // Output, active LOW
+#define ACK_PIN     A3 // Input, active LOW
+#define TXD_PIN     A1 // Output; HIGH = 1, LOW = 0
 
 #define GO_PIN A6 // trigger printing to begin when this is pulled low
 
@@ -111,7 +114,7 @@ the character
 
 /* Uncomment TEST_MODE to make this interface work in a demo mode that will
    print various test strings */
-// #define TEST_MODE
+#define TEST_MODE
 
 // Enable serial debugging
 // #define ENABLE_DEBUGGING
@@ -174,18 +177,18 @@ uint8_t serialConfig = serialConfigs[serialConfigIdx].value;
 
 #ifdef ENABLE_MULTIPLE_LEDS
   /* these are for the kicad adapter board */
-  // #define ON_LINE_LED D8
-  // #define STB_LED     D6
-  // #define ACK_LED     D2
-  // #define TXD_LED     D3
-  // #define LED_BUILTIN D13
+  #define ON_LINE_LED 8
+  #define STB_LED     6
+  #define ACK_LED     2
+  #define TXD_LED     3
+  #define LED_BUILTIN 13
 
-  /* these are for the breadboard test */
-  #define ON_LINE_LED D12
-  #define STB_LED     D11
-  #define ACK_LED     D10
-  #define TXD_LED     D9
-  #define LED_BUILTIN D13
+  // /* these are for the breadboard test */
+  // #define ON_LINE_LED D12
+  // #define STB_LED     D11
+  // #define ACK_LED     D10
+  // #define TXD_LED     D9
+  // #define LED_BUILTIN D13
 #endif
 
 #define ENABLE_MODE_BUTTON
