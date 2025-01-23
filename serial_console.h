@@ -16,37 +16,92 @@
 
 SerialCmd consoleSerial( Serial, SERIALCMD_CR, SERIALCMD_SPACE );
 
+#define consolePrint(msg) consoleSerial.Print(msg)
+
+// when you just want a new line
+void consolePrintln() {
+  consoleSerial.Print(F(LINE_ENDING));
+}
+
+void consolePrintln(char * msg) {
+  consoleSerial.Print(msg);
+  consolePrintln();
+}
+
+void consolePrintln(const __FlashStringHelper *msg) {
+  consoleSerial.Print(msg);
+  consolePrintln();
+}
+
+
 bool consoleEnabled = true; // to be moved elsewhere, trigged by button or something
 bool consoleEnMessageSent = false;
 
 int8_t ret;
 
+const uint8_t maxBannerWidth = 23;
+// void currentCommandBanner(char label[16], uint8_t width = 20, char bannerChar = '=') {
+void currentCommandBanner(char *label, uint8_t width = maxBannerWidth, char bannerChar = '=') {
+  char banner[width+1];
+  banner[width] = '\0'; // null terminate the array
+
+  for (uint8_t i = 0; i < width; i++) {
+    banner[i] = bannerChar;
+  }
+
+  uint8_t labelStartIdx = (width - strlen(label)) / 2;
+  for (uint8_t i = 0; i < strlen(label); i++) {
+    banner[labelStartIdx + i] = label[i];
+  }
+
+  consolePrintln(banner);
+}
+
+// Same as above, but for use with `F("")` macro
+// From https://stackoverflow.com/a/69139335
+void currentCommandBanner(const __FlashStringHelper *label, uint8_t width = 20, char bannerChar = '=') {
+  char buffer[maxBannerWidth+1];
+  strncpy_P(buffer, (const char*)label, maxBannerWidth);  // _P is the version to read from program space
+  currentCommandBanner(buffer);
+}
+
 void configHelp(void) {
-    consoleSerial.Print(F("Commands:\r\n"));
-    consoleSerial.Print(F("baud [rate]\tget or set the Serial Baud rate\r\n"));
-    consoleSerial.Print(F("show\t\tprint current config\r\n"));
+    currentCommandBanner(F("Help"));
+
+    consolePrintln(F("Commands:"));
+    consolePrintln(F("\tbaud [rate]\tget or set the Serial Baud rate"));
+    consolePrintln(F("\tconfig [value]\tget or set the Serial configuration"));
+    consolePrintln(F("\tshow\t\tprint current settings"));
     #ifdef ENABLE_EEPROM
-      consoleSerial.Print(F("load\t\tload config from EEPROM\r\n"));
-      consoleSerial.Print(F("write\t\twrite current config to EEPROM\r\n"));
+      consolePrintln(F("\tload\t\tload config from EEPROM"));
+      consolePrintln(F("\twrite\t\twrite current config to EEPROM"));
+      consolePrintln(F("\treset\t\treset EEPROM to defaults"));
     #endif
-    consoleSerial.Print(F("?\t\tlist commands\r\n"));
+    consolePrintln(F("\tinfo\t\tsystem information"));
+    consolePrintln(F("\t?\t\tlist commands"));
   }
 
   void configShow(void) {
-    consoleSerial.Print(F("Current config:\r\n"));
+    currentCommandBanner(F("Show Settings"));
+
     consoleSerial.Print(F("\tbaud\t")); consoleSerial.Print (serialBaud); consoleSerial.Print(F(" (index: "));
-    consoleSerial.Print(serialBaudIdx); consoleSerial.Print(F(")\r\n"));
+    consoleSerial.Print(serialBaudIdx); consolePrintln();
 
     consoleSerial.Print(F("\tconfig\t"));
     consoleSerial.Print(serialConfigs[serialConfigIdx].label);
      consoleSerial.Print(F(" (index: "));
      consoleSerial.Print(serialConfigIdx);
-    consoleSerial.Print(F(")\r\n"));
-
-    consoleSerial.Print(F("\r\n"));
+    consolePrintln();
   }
 
   void configInfo(void) {
+    currentCommandBanner(F("System Info"));
+    consoleSerial.Print(F("Firmware version: "));
+    consoleSerial.Print(F(FW_VERSION));
+    consoleSerial.Print(F(LINE_ENDING));
+
+    consoleSerial.Print(F("Licensed under GNU GPL V3\r\n\r\n"));
+
     consoleSerial.Print(F("Compiled with:\r\n"));
     #ifdef ENABLE_DEBUGGING
       consoleSerial.Print(F("\tserial debugging\r\n"));
@@ -62,11 +117,11 @@ void configHelp(void) {
 
     consoleSerial.Print(F("Memory:\r\n"));
 
-    consoleSerial.Print(F("\tStack size: ")); consoleSerial.Print((int) RAMEND - (int)SP); consoleSerial.Print(F("\r\n"));
+    consoleSerial.Print(F("\tStack size:\t")); consoleSerial.Print((int) RAMEND - (int)SP); consoleSerial.Print(F(LINE_ENDING));
 
-    consoleSerial.Print(F("\tFree ram: ")); consoleSerial.Print((int) SP - (int) (__brkval == 0 ? (int)&__heap_start : (int)__brkval)); consoleSerial.Print(F("\r\n"));
+    consoleSerial.Print(F("\tFree ram:\t")); consoleSerial.Print((int) SP - (int) (__brkval == 0 ? (int)&__heap_start : (int)__brkval)); consoleSerial.Print(F(LINE_ENDING));
 
-    consoleSerial.Print(F("\tSRAM size: ")); consoleSerial.Print((int) RAMEND - (int) &__data_start); consoleSerial.Print(F("\r\n"));
+    consoleSerial.Print(F("\tSRAM size:\t")); consoleSerial.Print((int) RAMEND - (int) &__data_start); consoleSerial.Print(F(LINE_ENDING));
   }
 
   void configBaud(void) {
@@ -86,7 +141,7 @@ void configHelp(void) {
         for (uint8_t idx = 0; idx < (sizeof(baudRates)/sizeof(baudRates[0])); idx++) {
           consoleSerial.Print(baudRates[idx]); consoleSerial.Print(F(" "));
         }
-        consoleSerial.Print(F("\r\n"));
+        consoleSerial.Print(F(LINE_ENDING));
 
         return;
       }
@@ -95,6 +150,7 @@ void configHelp(void) {
       serialBaudIdx = newSerialBaudIdx;
     }
 
+    currentCommandBanner(F("Serial Baud"));
     consoleSerial.Print(serialBaud);
     consoleSerial.Print(F(LINE_ENDING));
   }
@@ -115,7 +171,7 @@ void configHelp(void) {
         for (uint8_t idx = 0; idx < (sizeof(serialConfigs)/sizeof(serialConfigs[0])); idx++) {
           consoleSerial.Print(serialConfigs[idx].label); consoleSerial.Print(F(" "));
         }
-        consoleSerial.Print(F("\r\n"));
+        consoleSerial.Print(F(LINE_ENDING));
 
         return;
       }
@@ -124,6 +180,7 @@ void configHelp(void) {
       serialConfigIdx = newConfigIdx;
     }
 
+    currentCommandBanner(F("Serial Config"));
     consoleSerial.Print(serialConfigs[serialConfigIdx].label);
     consoleSerial.Print(F(LINE_ENDING));
   }
@@ -133,6 +190,7 @@ void configHelp(void) {
     EEPROM.put(CONFIG_IDX_ADDR, serialConfigIdx);
 
     #ifdef ENABLE_CONSOLE
+      currentCommandBanner(F("EEPROM Write"));
       consoleSerial.Print (F("Written.\r\n"));
     #endif
   }
@@ -140,6 +198,7 @@ void configHelp(void) {
   void configLoad(void) {
     loadEeprom();
     #ifdef ENABLE_CONSOLE
+      currentCommandBanner(F("EEPROM Load"));
       consoleSerial.Print (F("Loaded.\r\n"));
     #endif
   }
@@ -147,6 +206,7 @@ void configHelp(void) {
   void configReset(void) {
     resetEeprom();
     #ifdef ENABLE_CONSOLE
+      currentCommandBanner(F("EEPROM Reset"));
       consoleSerial.Print (F("Reset.\r\n"));
     #endif
   }
