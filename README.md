@@ -120,19 +120,20 @@ service manual:
 The included code will read data from the `Serial` device (usually USB Serial)
 and relay that to the typewriter in the correct format.
 
-
 ### Configure
 
 Edit [panasonic_typewriter_interface.ino](./panasonic_typewriter_interface.ino)
 and change the following lines as appropriate:
 
 ```c
-#define ON_LINE_PIN 5 // Output, active LOW
-#define STB_PIN 7  // Output, active LOW
-#define ACK_PIN 2 // Input, active LOW
-#define TXD_PIN 6 // Output; HIGH = 1, LOW = 0
+#define ON_LINE_PIN A0 // Output, active LOW
+#define STB_PIN     A2 // Output, active LOW
+#define ACK_PIN     A3 // Input, active LOW
+#define TXD_PIN     A1 // Output; HIGH = 1, LOW = 0
 
-#define GO_PIN A7 // trigger printing to begin when this is pulled low
+#define GO_PIN      A6 // trigger printing to begin when this is pulled low
+
+#define MODE_PIN    A7 // trigger printing to begin when this is pulled low
 ```
 
 CHECK WHAT KIND OF CABLE YOU HAVE, and remember that a Macintosh-style printer
@@ -143,6 +144,26 @@ Once you're done, upload it to your Arduino-compatible MCU.
 There is also a "Demo Mode" that will just print text automatically and not
 wait for input over serial; enable that by uncommenting `// #define TEST_MODE`
 in panasonic_typewriter_interface.ino.
+
+#### Optional Extra LEDs
+
+By default, the built-in LED on the Arduino module will be used for all status
+output. But if you are using the official PCB or have spare pins on your board,
+You can uncomment the line `// #define ENABLE_MULTIPLE_LEDS` and set the
+following pins appropriately:
+
+```c
+#define ON_LINE_LED 8
+#define STB_LED     6
+#define ACK_LED     2
+#define TXD_LED     3
+#define LED_BUILTIN 13
+```
+
+With this change, the LEDs will reflect the _state_ of each respective signal.
+Note, this is a _logic state_, not the _electrical state_. That means for
+active-low pins like ON_LINE, STB, and ACT, a low signal will turn *on* the
+appropriate LED.
 
 ### Printerering
 
