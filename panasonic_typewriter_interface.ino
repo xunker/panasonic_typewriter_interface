@@ -203,11 +203,11 @@ uint8_t serialConfig = serialConfigs[serialConfigIdx].value;
 void togglePin(uint8_t pinNum) { digitalWrite(pinNum, !digitalRead(pinNum)); }
 void toggleLED() { togglePin(LED_BUILTIN); }
 
-void onLinePin(bool pinState) {
+void setOnLinePin(bool pinState) {
   digitalWrite(ON_LINE_PIN, pinState);
   onLineLed(!pinState); // Signal is Active Low
 }
-void STBPin(bool pinState) {
+void setSTBPin(bool pinState) {
   digitalWrite(STB_PIN, pinState);
   STBLed(!pinState); // Signal is Active Low
 }
@@ -216,7 +216,7 @@ bool readACKPin() {
   ACKLed(!pinState); // Signal is Active Low
   return pinState;
 }
-void TXDPin(bool pinState) {
+void setTXDPin(bool pinState) {
   digitalWrite(TXD_PIN, pinState);
   TXDLed(pinState);
 }
@@ -263,9 +263,9 @@ void setup() {
   pinMode(GO_PIN, INPUT_PULLUP);
 
   // Set initial pin states for good measure
-  onLinePin(HIGH);
-  STBPin(HIGH);
-  TXDPin(HIGH);
+  setOnLinePin(HIGH);
+  setSTBPin(HIGH);
+  setTXDPin(HIGH);
   StatusLed(LOW);
 
   #ifdef ENABLE_EEPROM
@@ -347,7 +347,7 @@ void sendByte(char outbound) {
   ON_LINE goes LOW at the beginning of the BYTE transmission, and remains
   high until all bits of the byte are transmitted.
   */
-  onLinePin(LOW);
+  setOnLinePin(LOW);
 
   for(uint8_t bitPos = 0;  bitPos < 8; bitPos++) {
     /*
@@ -359,16 +359,16 @@ void sendByte(char outbound) {
 
     /* Send the bit. Compatible with whatever character set Arduino uses. */
     if (bitRead(translatedChar, bitPos)) {
-      TXDPin(HIGH);
+      setTXDPin(HIGH);
       debugf("1");
     } else {
-      TXDPin(LOW);
+      setTXDPin(LOW);
       debugf("0");
     }
     waitForSignalToSettle();
 
     /* Set STB to low, signaling typewritter to read the current TXD value. */
-    STBPin(LOW);
+    setSTBPin(LOW);
     waitForSignalToSettle();
 
     /*
@@ -378,16 +378,16 @@ void sendByte(char outbound) {
     waitForACKToGo(HIGH);
 
     /* Set STB to HIGH to tell the typewriter to latch the TXD value. */
-    STBPin(HIGH);
+    setSTBPin(HIGH);
 
     StatusLed(LOW);
 
     waitForSignalToSettle();
 
-    TXDPin(LOW); // resest the txd pin, just to be sure
+    setTXDPin(LOW); // resest the txd pin, just to be sure
   }
 
-  onLinePin(HIGH); // Signals end of byte
+  setOnLinePin(HIGH); // Signals end of byte
   delay(CHARACTER_PRINT_DELAY); // wait for the printer to actually print the character
 }
 
