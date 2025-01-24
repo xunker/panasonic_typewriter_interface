@@ -8,7 +8,8 @@ There is an option to view and change the current configuration using the
 serial port.
 
 This is only available if the code was compiled with `#define ENABLE_CONSOLE`
-uncommented in the main `.ino` file.
+uncommented in the main `.ino` file. Serial console support
+**is enabled by default**.
 
 ## Connecting
 

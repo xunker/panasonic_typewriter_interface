@@ -27,15 +27,28 @@ Untested, but should work with machines which have a DE-9 (DB-9) connector.
 See [PINOUT.md](./PINOUT.md) for detailed information about the typewriter
 connector pinout.
 
+## Adapter Board
+
+There's an [adapter board](adapter_boards/README.md) available to ease assembly,
+and to provide additional features.
+
 ## Code
 
 The included code will read data from the `Serial` device (usually USB Serial)
 and relay that to the typewriter in the correct format.
 
-## Adapter Board
+### Required Libraries
 
-There's an [adapter board](adapter_boards/README.md) available to ease assembly,
-and to provide additional features.
+The following libraries are required by default. They can either be installed
+manually or via the Arduino IDE:
+
+* [SerialCmd](https://github.com/gpb01/SerialCmd)
+* [MemoryUsage](https://github.com/Locoduino/MemoryUsage)
+* [AceButton](https://github.com/bxparks/AceButton/)
+
+SerialCmd and MemoryUsage are only needed by the
+[Serial Configuration Terminal](./SERIAL_CONFIG.md) (enabled default). AceButton
+is only needed if the "Mode" button is enabled (enabled by default).
 
 ### Configure
 
@@ -66,25 +79,27 @@ There is also a "Demo Mode" that will just print text automatically and not
 wait for input over serial; enable that by uncommenting `// #define TEST_MODE`
 in panasonic_typewriter_interface.ino.
 
-#### Optional Extra LEDs
+#### Extra LEDs (Optional, default)
 
-By default, the built-in LED on the Arduino module will be used for all status
-output. But if you are using the official PCB or have spare pins on your board,
-You can uncomment the line `// #define ENABLE_MULTIPLE_LEDS` and set the
-following pins appropriately:
+By default, there are 4 addition LEDs broken out to show the status of each of
+the signal lines (in addition to the built-in LED).
 
 ```c
 #define ON_LINE_LED 8
 #define STB_LED     6
 #define ACK_LED     2
 #define TXD_LED     3
-#define LED_BUILTIN 13
+#define LED_BUILTIN 13 // "Status" LED
 ```
 
-With this change, the LEDs will reflect the _state_ of each respective signal.
+These LEDs will reflect the _state_ of each respective signal.
 Note, this is a _logic state_, not the _electrical state_. That means for
 active-low pins like ON_LINE, STB, and ACT, a low signal will turn *on* the
 appropriate LED.
+
+However, if you do not require these additional LEDs you can comment-out the
+line `#define ENABLE_MULTIPLE_LEDS`, and then only the built-in LED will be
+used.
 
 ## Printerering (aka, how to use this)
 
