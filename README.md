@@ -30,9 +30,14 @@ connector pinout.
 The included code will read data from the `Serial` device (usually USB Serial)
 and relay that to the typewriter in the correct format.
 
+## Adapter Board
+
+There's an [adapter board](adapter_boards/README.md) available to ease assembly,
+and to provide additional features.
+
 ### Configure
 
-NOTE: if you are using the included adapter board, you do not need to do any
+NOTE: if you are using the included [adapter board](adapter_boards/README.md), you do not need to do any
 additional configuration. Simply connect your cable and adjust the "Cable Type"
 jumpers so they are both closest to whichever LED (D1 or D2) is lit up.
 
@@ -95,7 +100,7 @@ CODE+E again.
 ### Set microcontroller to "RUN" Mode
 
 Once in "On-Line Mode", you'll need to set your Arduino to "Run" mode. If you
-are using the included adapter board, you do this by switching the "RUN/HALT"
+are using the included [adapter board](adapter_boards/README.md), you do this by switching the "RUN/HALT"
 switch to "RUN". If you are have wired your own microcontroller, you will
 connect pin A7 (or whatever pin you assigned to `GO_PIN`) to ground.
 
