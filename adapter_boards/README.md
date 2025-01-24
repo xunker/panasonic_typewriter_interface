@@ -12,8 +12,7 @@ LGT8F328.
 ### Voltage Warning
 
 Some "Nano" clone modules might be 3.3V instead of 5V. This board will **only
-work with 5V models**, and a **3.3V model will get fried** if you try use one
-instead.
+work with 5V models**, and a **3.3V model will get fried** if you use one here!
 
 ## Features
 
