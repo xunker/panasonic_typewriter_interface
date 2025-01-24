@@ -9,6 +9,8 @@ serial/RS-232 function of the KX-R60, RP-K100, or RP-K105 interface adapters.
 Use your 🏋️heavy🥌 and 🐢slow🐌 typewriter as a noisy, inconvenient, inflexible,
 single-page printer!
 
+[![Assembled Adapter](adapter_boards/assembled_small.jpg)](adapter_boards/README.md)
+
 ## Compatibility
 
 ### KX-R series with MiniDIN-8 port
