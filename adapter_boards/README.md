@@ -49,8 +49,8 @@ from the Arduino Nano.
 
 #### Second Serial Breakout ('328PB)
 
-If your module is using the atMega328PB MCU (only used in clones), this also
-gives you access to the second serial device (`Serial1`).
+If your module is using the atMega328PB MCU (only used in clones), this board
+also gives you access to the second serial device (`Serial1`).
 
 ### I2C Breakout
 
@@ -61,3 +61,21 @@ with the "Stemma QT" connector standard used by AdaFruit and Sparkfun.
 
 Files for this board can be found in
 [panasonic_typewriter_interface](./panasonic_typewriter_interface).
+
+## Bill of Materials
+
+Qty | Name                       | ID     | Notes
+----|----------------------------|--------|-----------------------------------
+1   | Arduino Nano or compatible | A1     | If using a clone, ensure 5V model
+7   | 0805 SMD LED               | D1-D7  | any LED of correct size will do
+1   | 2x06 SMD Header, 2.54mm    | J2     |
+2   | Jumpers/Shunts for J2      | n/a    |
+1   | MiniDIN-8 connector        | J1     | KMDGX-8S-AS, but most others work
+2   | 0805 1.2K ohm Resistor     | R1, R2 |
+5   | 0805 220-330ohm Resistor   | R3-R7  |
+1   | PCM12 Switch, SMD SPDT     | SW1    |
+1   | FSMSM Button               | SW2    |
+1   | 1206 Fuse, SMD, <500mA     | F1     | Optional
+2   | JST GH Connector, 6-pin    | J3, J4 | Optional
+1   | JST SH Connector, 4-pin    | J5     | Optional
+
