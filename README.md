@@ -115,8 +115,13 @@ typewriter.
 ### Send text
 
 Finally, open a serial connection to your MCU (using the built-in Serial Console
-in the Arduino IDE works well) and sent some text -- with luck, you'll see it
-appear in your paper!
+in the Arduino IDE works well). The default speed/baud is 57600.
+
+Send some text! With luck, you'll see it appear in your paper!
+
+## Serial Configuration Terminal
+
+See [SERIAL_CONFIG.md](./SERIAL_CONFIG.md).
 
 ## Theory of Operation
 
