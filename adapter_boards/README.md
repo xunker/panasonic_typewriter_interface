@@ -2,8 +2,8 @@
 
 https://github.com/xunker/panasonic_typewriter_interface
 
-[![Assembled Adapter](assembled_small.jpg)](assembled.jpg)[![Front of PCB](pcb_2024-10-a_front_small.jpg)](pcb_2024-10-a_front_small.png)[![Back of
-PCB](pcb_2024-10-a_back_small.jpg)](pcb_2024-10-a_back_small.png)
+[![Assembled Adapter](assembled_small.jpg)](assembled.jpg)[![Front of PCB](pcb_2024-10-a_front_small.jpg)](pcb_2024-10-a_front.png)[![Back of
+PCB](pcb_2024-10-a_back_small.jpg)](pcb_2024-10-a_back.png)
 
 Here is an adapter board to make it easier to wire up your typewriter. It's
 based ardound the Arduino Nano, and will work with compatible clones like
