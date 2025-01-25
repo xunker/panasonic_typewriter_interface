@@ -138,6 +138,19 @@ Send some text! With luck, you'll see it appear in your paper!
 
 See [SERIAL_CONFIG.md](./SERIAL_CONFIG.md).
 
+## Known Problems
+
+### Can't print more than 62 columns
+
+On my KX-R435, I cannot print a line longer than 62 columns. This happens
+regardless of the CPI setting, margins, or tabs.
+
+I am able to _type_ the full-carriage width, but "ON-LINE MODE" won't allow
+me to go beyond 62 characters.
+
+If there is a special setting in the manual, I have missed it. If you know how
+to overcome this problem please tell me how in [a new Issue](https://github.com/xunker/panasonic_typewriter_interface/issues/new?template=Blank+issue).
+
 ## Theory of Operation
 
 From [this page](./panasonic_rp-k100_interface_circuit.pdf) in the KX-W50TH/W60TH
