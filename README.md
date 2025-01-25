@@ -214,9 +214,19 @@ service manual:
   * ability to set tab-to-space count in serial console
 * mode button support
   * long press triggers demo while in "run" mode
+* Better serial buffering
+  * Default 64 byte buffer doesn't even do 300 baud well
+  * Implement a 1K ring buffer? We have the free SRAM
+* Software flow control
+  * [theoretically possible](https://forum.arduino.cc/t/xon-xoff-problems-with-ch340g-on-arduio-uno-clone/647752/2),
+    would negate the need for a bigger serial buffer
 
 ### Want
 
+* Hardware Flow control
+  * The RTS/CTS pins on the FT232/CH9340 are not connected to anything, so it
+    means rolling a new adapter board with our own USB Serial IC, or moving
+    to an MCU that implements RTS/CTS or DTR/DSR via their USB stack. ESP32?
 * I2C display?
 * Automatically insert correct line-breaks, depending on CPI switch setting
   - May not be needed, Windows' generic/text only printer [automatically wraps
