@@ -16,7 +16,8 @@ uncommented in the main `.ino` file. Serial console support
 Switch "RUN/HALT" to "HALT" and reboot the MCU, you can now connect using
 whatever program you choose (the Arduino IDE Serial Console works well).
 
-The default speed/baud is 57600.
+The default speed/baud is 300. Yes, I'm serious, 300 baud. Typewriters are slow,
+deal with it.
 
 If the serial config console is enabled, you should see this when you connect:
 

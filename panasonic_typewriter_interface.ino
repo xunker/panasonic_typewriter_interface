@@ -107,8 +107,8 @@ explaination.
 #define SIGNAL_SETTLE_DELAY 2
 
 /*
-How many MILLIseconds to wait after sending a byte to the typewriter, to give it a chance to type
-the character
+How many MILLIseconds to wait after sending a byte to the typewriter, to give it
+a chance to type the character
 */
 #define CHARACTER_PRINT_DELAY 5
 
@@ -120,18 +120,22 @@ the character
 #define ENABLE_DEBUGGING
 
 /*
- serialBaud is the baud for Serial.begin. Possible values are:
+ serialBaud is the baud for Serial.begin. Default is 300 baud (YES I'M SERIOUS),
+ and while you can set it higher I DO NO RECOMMEND IT because typewriters are
+ fantasically slow! Also, the atMega238 only has a 64 byte serial buffer out of
+ the box and 300 baud will fill that in literally TWO SECONDS.
 
- 2400, 4800, 9600, 19200, 31250, 38400, and 57600.
+ Possible values are:
+
+ 300, 600, 1200, 2400, 4800, 9600, 19200, 31250, 38400, and 57600.
  Speeds of 748800 and 115200 are possible but not recommened on the ATmega.
 */
-#define DEFAULT_BAUD_IDX 5
+#define DEFAULT_BAUD_IDX 0
 const uint32_t baudRates[] ={
-  4800, 9600, 19200, 31250, 38400, 57600, 748800, 115200
+  300, 600, 1200, 2400, 4800, 9600, 19200, 31250, 38400, 57600
 };
 uint8_t serialBaudIdx = DEFAULT_BAUD_IDX;
 uint32_t serialBaud = baudRates[DEFAULT_BAUD_IDX];
-
 
 typedef struct {
   char *label;

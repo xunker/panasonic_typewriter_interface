@@ -117,22 +117,33 @@ CODE+E again.
 ### Set microcontroller to "RUN" Mode
 
 Once in "On-Line Mode", you'll need to set your Arduino to "Run" mode. If you
-are using the included [adapter board](adapter_boards/README.md), you do this by switching the "RUN/HALT"
-switch to "RUN". If you are have wired your own microcontroller, you will
-connect pin A7 (or whatever pin you assigned to `GO_PIN`) to ground.
+are using the included [adapter board](adapter_boards/README.md), you do this by
+switching the "RUN/HALT" switch to "RUN". If you are have wired your own
+microcontroller, you will connect pin A7 (or whatever pin you assigned to
+`GO_PIN`) to ground.
 
-Once you switch to "RUN" mode, reset the microcontroller once to ensure it's now in the
-correct mode.
+Once you switch to "RUN" mode, reset the microcontroller once to ensure it's now
+in the correct mode.
 
 As long as that pin is grounded, sentences will keep being sent to the
 typewriter.
 
-### Send text
+### Send text - SLOWLY
 
 Finally, open a serial connection to your MCU (using the built-in Serial Console
-in the Arduino IDE works well). The default speed/baud is 57600.
+in the Arduino IDE works well).
 
-Send some text! With luck, you'll see it appear in your paper!
+The default speed is 300 baud. Yes, you read correctly, **300 baud**. Because
+it's a freakin' TYPEWRITER! It can _barely_ keep up with 30 char/sec. If you
+want a laser printer, you know where to find one.
+
+Out of the box, the Arduino toolchain only gives the atMega328 a 64 byte serial
+buffer, which can hold about 2 seconds of data at 300 baud. I'd actually like
+to set the default speed to 110 baud, but no operating systems have supported
+that speed for at least 30 years. Yes, not even Linux despite the lies that
+`stty` tells you.
+
+Send some text! With luck, you'll see it appear in your paper! Eventually!
 
 ## Serial Configuration Terminal
 
