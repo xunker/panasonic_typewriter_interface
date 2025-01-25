@@ -177,9 +177,9 @@ uint8_t serialConfig = serialConfigs[serialConfigIdx].value;
   Automatically send a CR-LF when a line reaches the maximum length,
   either DEFAULT_MAXIMUM_LINE_LENGTH or the setting in EEPROM.
 */
-#define ENABLE_AUTOMATIC_CRLF
+// #define ENABLE_AUTOMATIC_CRLF
 
-#define DEFAULT_MAXIMUM_LINE_LENGTH 62 // characters
+#define DEFAULT_MAXIMUM_LINE_LENGTH 80 // characters
 uint8_t maximumLineLength = DEFAULT_MAXIMUM_LINE_LENGTH;
 
 /* Enable upper-ascii character translation. THIS IS CURRENTLY BROKEN. */
