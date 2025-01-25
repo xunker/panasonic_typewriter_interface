@@ -117,7 +117,7 @@ the character
 // #define TEST_MODE
 
 // Enable serial debugging
-// #define ENABLE_DEBUGGING
+#define ENABLE_DEBUGGING
 
 /*
  serialBaud is the baud for Serial.begin. Possible values are:
@@ -169,6 +169,14 @@ const serialConfigOption serialConfigs[] = {
 uint8_t serialConfigIdx = DEFAULT_SERIAL_CONFIG_IDX;
 uint8_t serialConfig = serialConfigs[serialConfigIdx].value;
 
+/*
+  Automatically send a CR-LF when a line reaches the maximum length,
+  either DEFAULT_MAXIMUM_LINE_LENGTH or the setting in EEPROM.
+*/
+#define ENABLE_AUTOMATIC_CRLF
+
+#define DEFAULT_MAXIMUM_LINE_LENGTH 62 // characters
+uint8_t maximumLineLength = DEFAULT_MAXIMUM_LINE_LENGTH;
 
 /* Enable upper-ascii character translation. THIS IS CURRENTLY BROKEN. */
 // #define ENABLE_CHARACTER_TRANSLATION
@@ -192,6 +200,10 @@ uint8_t serialConfig = serialConfigs[serialConfigIdx].value;
 #endif
 
 #define ENABLE_MODE_BUTTON
+
+#ifdef ENABLE_AUTOMATIC_CRLF
+  uint8_t currentLineLength = 0;
+#endif
 
 #include "eeprom.h"
 #include "debugging.h"
@@ -389,6 +401,14 @@ void sendByte(char outbound) {
 
   setOnLinePin(HIGH); // Signals end of byte
   delay(CHARACTER_PRINT_DELAY); // wait for the printer to actually print the character
+
+  #ifdef ENABLE_AUTOMATIC_CRLF
+    if ((outbound == '\r') || (outbound == '\n')) {
+      currentLineLength = 0;
+    }
+  #endif
+
+  debugf("\n");
 }
 
 char incomingByte;
@@ -398,9 +418,6 @@ void processByte(char incomingByte) {
     return;
 
   sendByte(incomingByte);
-
-  debugf("\n");
-
   StatusLed(LOW);
 }
 
@@ -408,6 +425,20 @@ void relayLoop() {
   while( Serial.available() > 0 ) {
     incomingByte = Serial.read();
     processByte(incomingByte);
+
+    #ifdef ENABLE_AUTOMATIC_CRLF
+      if (currentLineLength++ >= maximumLineLength) {
+        // Send CR/LF because we're reached the end of the line.
+        // snedByte() will reset currentLineLength for us.
+        debugf("maximumLineLength ");
+        debug(maximumLineLength);
+        debugf(" reached, sending crlf.\n");
+        sendByte('\r');
+        sendByte('\n');
+
+        waitForACKToGo(LOW);
+      };
+    #endif
   }
 
   /* if nothing to read, wait a little bit before trying to read again */

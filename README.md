@@ -149,7 +149,13 @@ I am able to _type_ the full-carriage width, but "ON-LINE MODE" won't allow
 me to go beyond 62 characters.
 
 If there is a special setting in the manual, I have missed it. If you know how
-to overcome this problem please tell me how in [a new Issue](https://github.com/xunker/panasonic_typewriter_interface/issues/new?template=Blank+issue).
+to overcome this problem please tell me how in [a new
+Issue](https://github.com/xunker/panasonic_typewriter_interface/issues/new?template=Blank+issue).
+
+Wait: is this because the default arduino serial buffer is
+[only 64
+bytes](https://docs.arduino.cc/language-reference/en/functions/communication/serial/available/)?
+Maybe I need to employ some kind of interrupt-drive ring buffer.
 
 ## Theory of Operation
 
