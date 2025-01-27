@@ -78,3 +78,8 @@ Qty | Name                       | ID     | Notes
 2   | JST GH Connector, 6-pin    | J3, J4 | Optional
 1   | JST SH Connector, 4-pin    | J5     | Optional
 
+## License
+
+This board is published under the terms of the
+[Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+International](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en) license.
