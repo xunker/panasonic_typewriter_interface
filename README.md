@@ -15,6 +15,22 @@ A complete video of the ~~high~~ low-speed daisywheel action can be found on [th
 
 [![Assembled Adapter](adapter_boards/assembled_small.jpg)](adapter_boards/README.md)
 
+
+## Table of Contents
+
+- [Compatibility](#compatibility)
+- [Pinout](#pinout)
+- [Adapter Board](#adapter-board)
+- [Code](#code)
+- [Printerering (aka, how to use this)](#printerering-aka-how-to-use-this)
+- [Serial Configuration Terminal](#serial-configuration-terminal)
+- [Known Problems](#known-problems)
+- [Theory of Operation](#theory-of-operation)
+- [TODO](#todo)
+- [License](#license)
+
+---
+
 ## Compatibility
 
 ### KX-R series with MiniDIN-8 port
