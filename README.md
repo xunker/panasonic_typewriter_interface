@@ -11,6 +11,8 @@ single-page printer!
 
 ![Animation of printing from Panasonic KX-R-435](kx-r435-anim.gif)
 
+A complete video of the ~~high~~ low-speed daisywheel action can be found on [the TouYubes](https://youtu.be/Eb-3h6uFz88).
+
 [![Assembled Adapter](adapter_boards/assembled_small.jpg)](adapter_boards/README.md)
 
 ## Compatibility
