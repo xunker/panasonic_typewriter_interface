@@ -9,6 +9,8 @@ serial/RS-232 function of the KX-R60, RP-K100, or RP-K105 interface adapters.
 Use your 🏋️heavy🥌 and 🐢slow🐌 typewriter as a noisy, inconvenient, inflexible,
 single-page printer!
 
+![Animation of printing from Panasonic KX-R-435](kx-r435-anim.gif)
+
 [![Assembled Adapter](adapter_boards/assembled_small.jpg)](adapter_boards/README.md)
 
 ## Compatibility
@@ -151,22 +153,27 @@ See [SERIAL_CONFIG.md](./SERIAL_CONFIG.md).
 
 ## Known Problems
 
-### Can't print more than 62 columns
+### Can't keep up with 300 baud in normal circumstances
 
-On my KX-R435, I cannot print a line longer than 62 columns. This happens
-regardless of the CPI setting, margins, or tabs.
+The default speed is 300 baud (see "Send text - SLOWLY" for reasons), and even
+that has problems currently. Text will get out-of-sync in about 2 lines.
 
-I am able to _type_ the full-carriage width, but "ON-LINE MODE" won't allow
-me to go beyond 62 characters.
-
-If there is a special setting in the manual, I have missed it. If you know how
-to overcome this problem please tell me how in [a new
-Issue](https://github.com/xunker/panasonic_typewriter_interface/issues/new?template=Blank+issue).
-
-Wait: is this because the default arduino serial buffer is
+This is related to the Arduino Serial buffer being
 [only 64
-bytes](https://docs.arduino.cc/language-reference/en/functions/communication/serial/available/)?
-Maybe I need to employ some kind of interrupt-drive ring buffer.
+bytes](https://docs.arduino.cc/language-reference/en/functions/communication/serial/available/), and alternatives are being explored.
+
+Until I fully debug the issue, the only reliable fixes are A) use 150/110 baud if you
+can, or B) add a "character delay" when you send (CoolTerm can do this, Options->Transmit->"Use
+Transmit Character Delay", with a value ~ 50-100ms).
+
+### Reboot required when switching from from HALT to RUN with Serial Console
+
+If [Serial Console](./SERIAL_CONFIG.md) support is compiled in (the default), a reboot (via reset
+button) is require when going from HALT mode to RUN mode.
+
+### Mode button doesn't do anything
+
+The "[Mode Button](./mode_button.h)" is currently GN/DN (goes nowhere & does nothing).
 
 ## Theory of Operation
 
@@ -218,11 +225,13 @@ service manual:
   * Default 64 byte buffer doesn't even do 300 baud well
   * Implement a 1K ring buffer? We have the free SRAM
 * Software flow control
-  * [theoretically possible](https://forum.arduino.cc/t/xon-xoff-problems-with-ch340g-on-arduio-uno-clone/647752/2),
+  * [theoretically](https://forum.arduino.cc/t/xon-xoff-in-arduino/1122946/13)
+    [possible](https://forum.arduino.cc/t/xon-xoff-problems-with-ch340g-on-arduio-uno-clone/647752/2),
     would negate the need for a bigger serial buffer
+* Transceivers or driver/receiver pairs
 
 ### Want
-
+* Support alt Serial on LGT8F328 with Rx/Tx pins 5 & 6
 * Hardware Flow control
   * The RTS/CTS pins on the FT232/CH9340 are not connected to anything, so it
     means rolling a new adapter board with our own USB Serial IC, or moving
