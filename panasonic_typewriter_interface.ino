@@ -127,12 +127,12 @@ a chance to type the character
 
  Possible values are:
 
- 300, 600, 1200, 2400, 4800, 9600, 19200, 31250, 38400, and 57600.
+ 110, 150, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, and 57600.
  Speeds of 748800 and 115200 are possible but not recommened on the ATmega.
 */
-#define DEFAULT_BAUD_IDX 0
+#define DEFAULT_BAUD_IDX 2
 const uint32_t baudRates[] ={
-  300, 600, 1200, 2400, 4800, 9600, 19200, 31250, 38400, 57600
+  110, 150, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600
 };
 uint8_t serialBaudIdx = DEFAULT_BAUD_IDX;
 uint32_t serialBaud = baudRates[DEFAULT_BAUD_IDX];
