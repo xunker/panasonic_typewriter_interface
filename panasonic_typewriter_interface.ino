@@ -472,6 +472,15 @@ void relayLoop() {
 //   ESC_CODE, 0x09, 2, ESC_CODE, 0x09, 4, ESC_CODE, ESC_CODE, 0x09, 0,
 // };
 
+// char testString[] = {
+//   ESC_CODE, 0x44, // reverse half line, no workie
+//   ESC_CODE, 0x55, // forward half line, no workie
+//   ' ', ' ',
+//   ESC_CODE, 0x1a,0x49  // initialize printer, no workie
+// };
+
+// Codes might be same as Panasonic E7000?
+
 //built-in underscore and bold
 char testString[] = {
   'P', 'l', 'a', 'i', 'n', ' ',
