@@ -108,16 +108,17 @@ explaination.
 
 /*
 How many MILLIseconds to wait after sending a byte to the typewriter, to give it
-a chance to type the character
+a chance to type the character. May not even be required.
 */
-#define CHARACTER_PRINT_DELAY 5
+// #define CHARACTER_PRINT_DELAY 5
+#define CHARACTER_PRINT_DELAY 0
 
 /* Uncomment TEST_MODE to make this interface work in a demo mode that will
    print various test strings */
 // #define TEST_MODE
 
 // Enable serial debugging
-#define ENABLE_DEBUGGING
+// #define ENABLE_DEBUGGING
 
 /*
  serialBaud is the baud for Serial.begin. Default is 300 baud (YES I'M SERIOUS),
@@ -209,6 +210,15 @@ uint8_t maximumLineLength = DEFAULT_MAXIMUM_LINE_LENGTH;
   uint8_t currentLineLength = 0;
 #endif
 
+// A non-blocking replacement for delay()
+unsigned long waitUntilMS = 0;
+void wait(uint16_t delayMS) {
+  waitUntilMS = millis() + delayMS;
+  while (millis() < waitUntilMS) {
+    // no-op
+  }
+}
+
 #include "eeprom.h"
 #include "debugging.h"
 #include "serial_console.h"
@@ -264,7 +274,7 @@ example, this delay is used between us setting ~STB and reading the ~ACK value
 from the typewriter.
 */
 void waitForSignalToSettle() {
-  delay(SIGNAL_SETTLE_DELAY);
+  wait(SIGNAL_SETTLE_DELAY);
 }
 
 
@@ -404,7 +414,9 @@ void sendByte(char outbound) {
   }
 
   setOnLinePin(HIGH); // Signals end of byte
-  delay(CHARACTER_PRINT_DELAY); // wait for the printer to actually print the character
+  #if (CHARACTER_PRINT_DELAY > 0)
+    wait(CHARACTER_PRINT_DELAY); // wait for the printer to actually print the character
+  #endif
 
   #ifdef ENABLE_AUTOMATIC_CRLF
     if ((outbound == '\r') || (outbound == '\n')) {
@@ -444,9 +456,6 @@ void relayLoop() {
       };
     #endif
   }
-
-  /* if nothing to read, wait a little bit before trying to read again */
-  delay(100);
 }
 
 #define ESC_CODE 0x1B

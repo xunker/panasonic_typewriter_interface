@@ -17,12 +17,12 @@ void StatusLed(bool pinState) { digitalWrite(LED_BUILTIN, pinState);  }
 
     for (uint8_t i = 0; i < 5; i++) {
       digitalWrite(LedPins[i], HIGH);
-      delay(100);
+      wait(100);
     }
 
     for (uint8_t i = 0; i < 5; i++) {
       digitalWrite(LedPins[i], LOW);
-      delay(100);
+      wait(100);
     }
   }
 
@@ -43,9 +43,9 @@ void StatusLed(bool pinState) { digitalWrite(LED_BUILTIN, pinState);  }
   void testLeds() {
     for (uint8_t i = 0; i < 5; i++) {
       StatusLed(HIGH);
-      delay(100);
+      wait(100);
       StatusLed(LOW);
-      delay(100);
+      wait(100);
     }
   }
 

@@ -237,7 +237,7 @@ void serialConsoleLoop() {
   if ( ret == 0 ) {
     consolePrintln( F("ERROR: Unrecognized command.") );
   }
-  delay(100);
+  wait(100);
 }
 
 #endif

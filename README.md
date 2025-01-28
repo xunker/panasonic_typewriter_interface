@@ -182,7 +182,7 @@ bytes](https://docs.arduino.cc/language-reference/en/functions/communication/ser
 
 Until I fully debug the issue, the only reliable fixes are A) use 150/110 baud if you
 can, or B) add a "character delay" when you send (CoolTerm can do this, Options->Transmit->"Use
-Transmit Character Delay", with a value ~ 50-100ms).
+Transmit Character Delay", with a value >20ms).
 
 ### Reboot required when switching from from HALT to RUN with Serial Console
 
