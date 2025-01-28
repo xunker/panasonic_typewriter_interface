@@ -274,7 +274,9 @@ example, this delay is used between us setting ~STB and reading the ~ACK value
 from the typewriter.
 */
 void waitForSignalToSettle() {
-  wait(SIGNAL_SETTLE_DELAY);
+  #if (SIGNAL_SETTLE_DELAY > 0)
+    wait(SIGNAL_SETTLE_DELAY);
+  #endif
 }
 
 
