@@ -458,7 +458,7 @@ void relayLoop() {
   }
 }
 
-#define ESC_CODE 0x1B
+#define ESC_CODE 0x1B // Same character as ESP/P!
 // Overstrike test - works but not needed beause built-in underscore support
 // char testString[] = {
 //   'T', 0x08, '_', 'e', 0x08, '_', 's', 0x08, '_', 't', 0x08, '_', '.', '\r', '\n'
@@ -475,13 +475,13 @@ void relayLoop() {
 //built-in underscore and bold
 char testString[] = {
   'P', 'l', 'a', 'i', 'n', ' ',
-  ESC_CODE, 0x45, // Bold on
+  ESC_CODE, 0x45, // Bold on, same as ESP/P Legacy Code
   'B', 'o', 'l', 'd',
-  ESC_CODE, 0x46, // Bold off
+  ESC_CODE, 0x46, // Bold off, same as ESP/P Legacy Code
   ' ',
-  ESC_CODE, 0x2D, 0x01, // Underscore on
+  ESC_CODE, 0x2D, 0x31, // Underscore on, similar to ESP/P Code with 0x31 added
   'U', 'n', 'd', 'e', 'r', 'l', 'i', 'n', 'e',
-  ESC_CODE, 0x2D, 0x00, // Underscore off
+  ESC_CODE, 0x2D, 0x30, // Underscore off, similar to ESP/P Code with 0x30 added
   '\r', '\n'
 };
 
