@@ -2,9 +2,10 @@
 
 https://github.com/xunker/panasonic_typewriter_interface
 
-Print text using the Interface Port of your compatible Panasonic KX-R/KX-W
-Daisywheel or Thermal typewriter, or KX-WD55 printererer. Emulates the
-serial/RS-232 function of the KX-R60, RP-K100, or RP-K105 interface adapters.
+Print text using the Interface Port of your compatible Panasonic KX-R Daisywheel
+typewriter, KX-W word processor, KX-T "CupWheel" typewriter, or KX-WD55
+daisywheel printer. Emulates the serial/RS-232 function of the KX-R60, RP-K100,
+or RP-K105 interface adapters.
 
 Use your 🏋️heavy🥌 and 🐢slow🐌 typewriter as a noisy, inconvenient, inflexible,
 single-page printer!
