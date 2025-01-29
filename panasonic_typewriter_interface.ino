@@ -219,12 +219,12 @@ void wait(uint16_t delayMS) {
   }
 }
 
-#include "eeprom.h"
-#include "debugging.h"
-#include "serial_console.h"
-#include "conversion.h"
-#include "multiple_leds.h"
-#include "mode_button.h"
+#include "src/eeprom.h"
+#include "src/debugging.h"
+#include "src/serial_console.h"
+#include "src/conversion.h"
+#include "src/multiple_leds.h"
+#include "src/mode_button.h"
 
 void togglePin(uint8_t pinNum) { digitalWrite(pinNum, !digitalRead(pinNum)); }
 void toggleLED() { togglePin(LED_BUILTIN); }
