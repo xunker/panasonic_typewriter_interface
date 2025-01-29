@@ -219,6 +219,15 @@ void wait(uint16_t delayMS) {
   }
 }
 
+// A non-blocking microsecond delay
+unsigned long waitUntilUS = 0;
+void waitUS(uint16_t delayUS) {
+  waitUntilUS = micros() + delayUS;
+  while (micros() < waitUntilUS) {
+    // no-op
+  }
+}
+
 #include "src/eeprom.h"
 #include "src/debugging.h"
 #include "src/serial_console.h"
@@ -248,21 +257,48 @@ void setTXDPin(bool pinState) {
 }
 
 void waitForACKToGo(bool pinState) {
-  StatusLed(HIGH);
+  // StatusLed(HIGH);
 
-  uint8_t waitCounter = 0;
-  while(readACKPin() == !pinState) {
-    waitForSignalToSettle();
+  #ifdef ENABLE_DEBUGGING
+    uint8_t waitCounter = 0;
+  #endif
+  while(digitalRead(ACK_PIN) == !pinState) {
+    // waitForSignalToSettle();
 
-    if (waitCounter++ >= 100) {
-      debug(millis());
-      debugf(" waiting for ACK to go ");
-      debugln(pinState);
-      waitCounter = 0;
-    }
+    #ifdef ENABLE_DEBUGGING
+      if (waitCounter++ >= 100) {
+        debug(millis());
+        debugf(" waiting for ACK to go ");
+        debugln(pinState);
+        waitCounter = 0;
+      }
+    #endif
   }
-  StatusLed(LOW);
+  ACKLed(!pinState);  // Signal is Active Low
+  // StatusLed(LOW);
 }
+
+
+// // A digitalRead() is about 3.6us.
+// // https://forum.arduino.cc/t/how-exactly-slow-is-digitalread/325458/4
+// #define AVG_COUNT 255
+// uint8_t avgSum = 0;
+// bool avgPinOverReads(uint8_t pin) {
+//   avgSum = 0;
+//   for (uint8_t i = 0; i < AVG_COUNT; i++) {
+//     avgSum = avgSum + digitalRead(pin);
+//   }
+
+//   return (avgSum > (AVG_COUNT/2));
+// }
+
+// bool ackVal;
+// void waitForACKToGo(bool pinState) {
+//   ackVal = avgPinOverReads(ACK_PIN);
+//   ACKLed(!ackVal);
+//   return ackVal;
+// }
+
 
 /*
 waitForSignalToSettle() is a separate method only to explain what's happening
@@ -273,12 +309,15 @@ typewriter a chance to process the signal and for any levels to settle. For
 example, this delay is used between us setting ~STB and reading the ~ACK value
 from the typewriter.
 */
-void waitForSignalToSettle() {
-  #if (SIGNAL_SETTLE_DELAY > 0)
-    wait(SIGNAL_SETTLE_DELAY);
-  #endif
-}
+// void waitForSignalToSettle() {
+//   #if (SIGNAL_SETTLE_DELAY > 0)
+//     wait(SIGNAL_SETTLE_DELAY);
+//   #endif
+// }
 
+void waitForSignalToSettle(uint8_t ms) {
+  wait(ms);
+}
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -378,12 +417,12 @@ void sendByte(char outbound) {
   setOnLinePin(LOW);
 
   for(uint8_t bitPos = 0;  bitPos < 8; bitPos++) {
-    /*
-    Wait for ACK to be high. The process outline at the beginning of this
-    file has this check *after* sending a bit, but I'm assuming ACK will be
-    LOW from the get-go
-    */
-    waitForACKToGo(LOW);
+    // /*
+    // Wait for ACK to be high. The process outline at the beginning of this
+    // file has this check *after* sending a bit, but I'm assuming ACK will be
+    // LOW from the get-go
+    // */
+    // waitForACKToGo(LOW);
 
     /* Send the bit. Compatible with whatever character set Arduino uses. */
     if (bitRead(translatedChar, bitPos)) {
@@ -393,11 +432,12 @@ void sendByte(char outbound) {
       setTXDPin(LOW);
       debugf("0");
     }
-    waitForSignalToSettle();
+    // waitForSignalToSettle(2);
+    waitUS(50);
 
     /* Set STB to low, signaling typewritter to read the current TXD value. */
     setSTBPin(LOW);
-    waitForSignalToSettle();
+    // waitForSignalToSettle();
 
     /*
     ACK is kept high while the bit is being processed by the typewriter, and
@@ -408,11 +448,13 @@ void sendByte(char outbound) {
     /* Set STB to HIGH to tell the typewriter to latch the TXD value. */
     setSTBPin(HIGH);
 
-    StatusLed(LOW);
+    waitForACKToGo(LOW);
 
-    waitForSignalToSettle();
+    // StatusLed(LOW);
 
-    setTXDPin(LOW); // resest the txd pin, just to be sure
+    // waitForSignalToSettle();
+
+    // setTXDPin(LOW); // resest the txd pin, just to be sure
   }
 
   setOnLinePin(HIGH); // Signals end of byte
