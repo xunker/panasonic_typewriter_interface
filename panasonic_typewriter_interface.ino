@@ -107,9 +107,9 @@ a chance to type the character. May not even be required.
 // #define CHARACTER_PRINT_DELAY 5
 #define CHARACTER_PRINT_DELAY 0
 
-/* Uncomment TEST_MODE to make this interface work in a demo mode that will
-   print various test strings */
-// #define TEST_MODE
+/* Uncomment TEST_MODE to enable demo mode when Mode button is long-pressed
+   while in RUN mode */
+#define TEST_MODE
 
 // Enable serial debugging
 // #define ENABLE_DEBUGGING
@@ -322,12 +322,7 @@ void loop() {
   #endif
 
   if (inRunMode()) {
-    #ifdef TEST_MODE
-      testLoop();
-    #else
-      relayLoop();
-    #endif
-
+    relayLoop();
   } else {
     #ifdef ENABLE_CONSOLE
       serialConsoleLoop();

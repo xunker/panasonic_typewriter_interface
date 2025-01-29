@@ -40,7 +40,7 @@ char testString[] = {
 };
 
 void sendTestString() {
-  for (uint8_t = i; i < sizeof(testString); i++) {
+  for (uint8_t i = i; i < sizeof(testString); i++) {
     processByte(testString[i]);
     wait(100);
   }
