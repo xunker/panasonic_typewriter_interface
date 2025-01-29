@@ -48,7 +48,7 @@ Enables a button connected to MODE_PIN, behaviour defined in mode_button.h */
 #define ENABLE_MODE_BUTTON
 
 /*
-TEST_MOD
+TEST_MODE
 
 Enables a demo mode when Mode button is long-pressed while in RUN mode */
 #define TEST_MODE
