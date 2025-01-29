@@ -1,8 +1,6 @@
 #ifndef EEPROM_H
 #define EEPROM_H
 
-// #include "config.h"
-
 // TODO: replace this with an eeprom library that does wear leveling
 #ifdef ENABLE_EEPROM
 

@@ -1,8 +1,6 @@
 #ifndef ENABLE_CONSOLE_H
 #define ENABLE_CONSOLE_H
 
-// #include "config.h"
-
 #ifdef ENABLE_CONSOLE
 
 #include <SerialCmd.h> // https://github.com/gpb01/SerialCmd

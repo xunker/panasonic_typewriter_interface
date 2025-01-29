@@ -1,8 +1,6 @@
 #ifndef MULTIPLE_LEDS_H
 #define MULTIPLE_LEDS_H
 
-// #include "config.h"
-
 // built-in led is always enabled
 void StatusLed(bool pinState) { digitalWrite(LED_BUILTIN, pinState);  }
 

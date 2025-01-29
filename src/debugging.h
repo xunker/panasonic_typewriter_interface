@@ -1,8 +1,6 @@
 #ifndef DEBUGGING_H
 #define DEBUGGING_H
 
-// #include "config.h"
-
 #ifdef ENABLE_DEBUGGING
   #define debugf(msg) Serial.print(F(msg))
   #define debug(msg) Serial.print(msg)

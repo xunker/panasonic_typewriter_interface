@@ -1,8 +1,6 @@
 #ifndef CONVERSION_H
 #define CONVERSION_H
 
-// #include "config.h"
-
 #ifdef ENABLE_CHARACTER_TRANSLATION
   typedef struct {
     char incoming; // coming in from serial
