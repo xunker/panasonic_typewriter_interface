@@ -1,118 +1,118 @@
 /*
 https://github.com/xunker/panasonic_typewriter_interface
 
-# Printing to a Panasonic KX-R435 (and compatible) electronic typewriter from a
-computer
+Printing to a Panasonic KX-R435 (and compatible) electronic typewriter from a
+computer. Also probbably compatible with other KX-R Daisywheel
+typewriters, KX-W word processors, RK-T "CupWheel" typewriters, or KX-WD55
+daisywheel printers.
 
-Sort-of emulates what the KX-R60, RP-K100, or RP-K105 interface adapters do,
-but without the useful part of being seen as a Centronics-compatible printer.
+Emulates the Serial function of the KX-R60, RP-K100, or RP-K105 interface
+adapters, but without the useful part of being seen as a Centronics-compatible
+printer.
 
-## Theory of Operation
+## Default settings
 
-From reference manual from KX-W50TH/W60TH service manual:
-
-  10.2.4 Interface Circuit
-  The interface circuit handles the handshaking needed for communication with a
-  I/F Adaptor (RP-K100). The RP-K100 allows interfacing with a host computer.
-  The handshake method is described in the following steps.
-
-  Process:
-  (1) The RP-K100 changes the ON LINE signal from H to L indicating that data
-  transmission has started . This ON LINE signal remains Low during the
-  transmission of 1 byte.
-  (2) The RP-K100 first sends the LSB (DO) of a transmitted byte to the TXD line
-  and changes the STB signal from H to L. This STB signal is sent to P51 of the
-  CPU which is the interruption.
-  (3) In the interruption state, the CPU receives a TXD signal and changes the
-  ACK signal from L to H. This ACK signal is sent to the RP-K100.
-  (4) After the RP-K100 has received the ACK signal (L level), the STB signal
-  changes from L to H.
-  (5) When the STB signal (High) is sent from the RP-K100, the thermalwriter
-  sends the ACK signal (High) to the RP-K100.
-  (6) When the ACK signal is High, the RP-K100 starts to send the next bit of
-  data.
-  (7) Once the RP-K100 sends 1 byte of data (8 bits) to the CPU , the ON LINE
-  signal changes from L to H.
-
----
+Serial: 300 baud, 8N1
 
 ## Pinout of MiniDIN-8 on Panasonic KX-R435
 
-"Direction" is relative to the Typewriter itself.
+For pinout information, see:
+https://github.com/xunker/panasonic_typewriter_interface/blob/main/PINOUT.md
 
-Din Pin | X-Over Pin | Source  | Signal   | Direction | Notes
---------|------------|---------|----------|-----------|---------------------
-      1 |          2 | GND     |          |           |
-      2 |          1 | GND     |          |           |
-      3 |          5 | GND     |          |           |
-      4 |          4 | IC1 P16 | ~ACK     | out       | (b)
-      5 |          3 | +12V    |          |           | For accessory power?
-      6 |          8 | IC1 P24 | TXD      | in        | (a,b,c)
-      7 |          7 | IC1 P18 | ~STB     | in        | (a,b,c)
-      8 |          6 | IC1 P23 | ~ON_LINE | in        | (a,b,c)
- Shield |     Shield | GND     |          |           |
+## Theory of Operation
 
-Notes:
-(a) Routed to MCU pin through a 100-ohm resistor
-(b) Has 1.5K pull-up to +5v
-(c) Decoupled via 103Z ceramic cap (10K pF, +80%/-20% tolerance) to ground
-(b) Has 10K pull-down to ground
-
-"X-Over Pin": If using a Macintosh-style printer cable, be aware that it is
-probably a "cross-over" or "null-modem" cable and several pairs of pins have
-been swapped:
-
-Connector | Cable
-----------|---------
- (HSKo) 1 | 2 (HSKi)
- (TXD-) 3 | 5 (RXD-)
- (TXD+) 6 | 8 (RXD+)
-
-!! IMPORTANT !!
-
-PIN 5 may carry 12V! That voltage can COMPLETELY RUIN your microcontroller!
-Verify the voltages of ALL PINS before connecting typerwiter to your device.
+See:
+https://github.com/xunker/panasonic_typewriter_interface/blob/main/README.md#theory-of-operation
 
 */
 
-// Version information
-#define FW_VERSION "1.0.0"
+/* --- BEGIN CONFIGURATION SECTION --- */
 
-// Enable serial configuration console
+/*
+ENABLE_CONSOLE
+
+Enable serial configuration console, available when in HALT mode */
 #define ENABLE_CONSOLE
 
-// #define ON_LINE_PIN 5 // Output, active LOW
-// #define STB_PIN 7  // Output, active LOW
-// #define ACK_PIN 2 // Input, active LOW
-// #define TXD_PIN 6 // Output; HIGH = 1, LOW = 0
+/*
+ENABLE_EEPROM
 
-// For adapter PCB
+Enable storing some firmware settings in EEPROM so they can be changed
+on-the-fly via software. Only makes sense if ENABLE_CONSOLE is enabled */
+#define ENABLE_EEPROM
+
+/*
+ENABLE_MODE_BUTTON
+
+Enables a button connected to MODE_PIN, behaviour defined in mode_button.h */
+#define ENABLE_MODE_BUTTON
+
+/*
+TEST_MOD
+
+Enables a demo mode when Mode button is long-pressed while in RUN mode */
+#define TEST_MODE
+
+/*
+ENABLE_DEBUGGING
+
+Enable debugging information over serial
+WARNING: this will slow down data transfter because it shares the same
+serial connection, so only enable it while ACTIVELY debugging a problem */
+// #define ENABLE_DEBUGGING
+
+/* Pin Assignments, To/From Typewriter */
 #define ON_LINE_PIN A0 // Output, active LOW
 #define STB_PIN     A2 // Output, active LOW
 #define ACK_PIN     A3 // Input, active LOW
 #define TXD_PIN     A1 // Output; HIGH = 1, LOW = 0
 
+/* Pin Assignments, Switches and Buttons on this device */
 #define GO_PIN A6 // trigger printing to begin when this is pulled low
+#define MODE_PIN A7 // See mode_button.h
 
-#define MODE_PIN A7 // trigger printing to begin when this is pulled low
+/*
+  Pin Assignments, Optional extra LEDs, Enabled by default
+  Disabled by commenting-out `#define ENABLE_MULTIPLE_LEDS` below */
+#define ON_LINE_LED 8
+#define STB_LED     6
+#define ACK_LED     2
+#define TXD_LED     3
 
-/* uncomment to have seprate LEDs for each typewriter signal, otherwise only
-   LED_BUILTIN will be enabled */
+#ifndef LED_BUILTIN
+  #define LED_BUILTIN 13
+#endif
+
+/*
+ENABLE_MULTIPLE_LEDS
+
+uncomment to have seprate LEDs for each typewriter signal, otherwise only
+LED_BUILTIN will be enabled */
 #define ENABLE_MULTIPLE_LEDS
 
 /*
-How many MILLIseconds to wait after sending a byte to the typewriter, to give it
-a chance to type the character. May not even be required.
+ENABLE_AUTOMATIC_CRLF
+
+Automatically send a CR-LF when a line reaches the maximum length,
+either DEFAULT_MAXIMUM_LINE_LENGTH or the setting in EEPROM.
+
+THis is NOT RECOMMENDED, because the typewriter seems to handle long lines just
+fine by itself.
 */
-// #define CHARACTER_PRINT_DELAY 5
-#define CHARACTER_PRINT_DELAY 0
+// #define ENABLE_AUTOMATIC_CRLF
 
-/* Uncomment TEST_MODE to enable demo mode when Mode button is long-pressed
-   while in RUN mode */
-#define TEST_MODE
+#define DEFAULT_MAXIMUM_LINE_LENGTH 80 // characters
 
-// Enable serial debugging
-// #define ENABLE_DEBUGGING
+/*
+ENABLE_CHARACTER_TRANSLATION
+
+Enable upper-ascii character translation. THIS IS CURRENTLY BROKEN. */
+// #define ENABLE_CHARACTER_TRANSLATION
+
+/* --- END CONFIGURATION SECTION --- */
+
+// Version information, please don't touch this unless you are me
+#define FW_VERSION "1.0.0"
 
 /*
  serialBaud is the baud for Serial.begin. Default is 300 baud (YES I'M SERIOUS),
@@ -168,37 +168,9 @@ const serialConfigOption serialConfigs[] = {
 uint8_t serialConfigIdx = DEFAULT_SERIAL_CONFIG_IDX;
 uint8_t serialConfig = serialConfigs[serialConfigIdx].value;
 
-/*
-  Automatically send a CR-LF when a line reaches the maximum length,
-  either DEFAULT_MAXIMUM_LINE_LENGTH or the setting in EEPROM.
-*/
-// #define ENABLE_AUTOMATIC_CRLF
-
-#define DEFAULT_MAXIMUM_LINE_LENGTH 80 // characters
-uint8_t maximumLineLength = DEFAULT_MAXIMUM_LINE_LENGTH;
-
-/* Enable upper-ascii character translation. THIS IS CURRENTLY BROKEN. */
-// #define ENABLE_CHARACTER_TRANSLATION
-
-#define ENABLE_EEPROM
-
-#ifdef ENABLE_MULTIPLE_LEDS
-  /* these are for the kicad adapter board */
-  #define ON_LINE_LED 8
-  #define STB_LED     6
-  #define ACK_LED     2
-  #define TXD_LED     3
-  #define LED_BUILTIN 13
-
-  // /* these are for the breadboard test */
-  // #define ON_LINE_LED D12
-  // #define STB_LED     D11
-  // #define ACK_LED     D10
-  // #define TXD_LED     D9
-  // #define LED_BUILTIN D13
+#ifdef ENABLE_AUTOMATIC_CRLF
+  uint8_t maximumLineLength = DEFAULT_MAXIMUM_LINE_LENGTH;
 #endif
-
-#define ENABLE_MODE_BUTTON
 
 #ifdef ENABLE_AUTOMATIC_CRLF
   uint8_t currentLineLength = 0;
@@ -206,20 +178,24 @@ uint8_t maximumLineLength = DEFAULT_MAXIMUM_LINE_LENGTH;
 
 // A non-blocking replacement for delay()
 unsigned long waitUntilMS = 0;
-void wait(uint16_t delayMS) {
+void waitMS(uint16_t delayMS) {
   waitUntilMS = millis() + delayMS;
   while (millis() < waitUntilMS) {
     // no-op
   }
 }
 
-// A non-blocking microsecond delay
+// A non-blocking replacement for delayMicroseconds()
 unsigned long waitUntilUS = 0;
 void waitUS(uint16_t delayUS) {
   waitUntilUS = micros() + delayUS;
   while (micros() < waitUntilUS) {
     // no-op
   }
+}
+
+void wait(uint16_t delayMS) {
+  waitMS(delayMS);
 }
 
 #include "src/eeprom.h"
@@ -264,6 +240,14 @@ void waitForACKToGo(bool pinState) {
   ACKLed(!pinState);  // Signal is Active Low
 }
 
+bool inRunMode() {
+  return (digitalRead(GO_PIN) == LOW);
+}
+
+bool inHaltMode() {
+  return (!inRunMode());
+}
+
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -301,16 +285,7 @@ void setup() {
   unsigned long currentMillis = 0;
   unsigned long nextSerialConsoleStatus = 0;
   #define SEND_SERIAL_CONSOLE_STATUS_EVERY 1000 // milliseconds
-
 #endif
-
-bool inRunMode() {
-  return (digitalRead(GO_PIN) == LOW);
-}
-
-bool inHaltMode() {
-  return (!inRunMode());
-}
 
 void loop() {
   #ifndef ENABLE_CONSOLE
@@ -384,9 +359,6 @@ void sendByte(char outbound) {
   }
 
   setOnLinePin(HIGH); // Signals end of byte
-  #if (CHARACTER_PRINT_DELAY > 0)
-    wait(CHARACTER_PRINT_DELAY); // wait for the printer to actually print the character
-  #endif
 
   #ifdef ENABLE_AUTOMATIC_CRLF
     if ((outbound == '\r') || (outbound == '\n')) {

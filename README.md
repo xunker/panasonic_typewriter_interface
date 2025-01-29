@@ -233,7 +233,7 @@ service manual:
 ## TODO
 
 ### Need
-
+* Use .h files properly; move code out of those
 * Get special/accented character conversion functioning
 * Convert special characters like tab ("\t") to spaces, to prevent typewriter
   from going crazy if no tabs have been set
