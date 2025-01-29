@@ -1,3 +1,9 @@
+/*
+
+Translate incoming upper-ascii characters in to the correct representation for
+typewriter output.
+
+*/
 #ifndef CONVERSION_H
 #define CONVERSION_H
 
@@ -80,7 +86,7 @@
   };
 
   // character translations -- these are all currently broken, don't know why
-  uint8_t testString[] = {
+  uint8_t translationTestString[] = {
     'ß', '½', '¼', 'ç', '¡', '¿', '¢', '£',
     '\r', '\n',
     'Ä', 'Ë', 'Ï', 'Ö', 'Ü', 'ä', 'ë', 'ï', 'ö', 'ü',
@@ -95,12 +101,14 @@
     '\r', '\n'
   };
 
+    char translatedChar = ' ';
+
     char translateCharacter(char incoming) {
     if (incoming >= 0xA0) {
       debugf("translating ");
       debug(incoming);
       debugf(" (");
-      debug(incoming, DEC);
+      debugfmt(incoming, DEC);
       debugf("): ");
       translatedChar = ' ';
       // translate the incoming byte in to requested charater for typewriter.

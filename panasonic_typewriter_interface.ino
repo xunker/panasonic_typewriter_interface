@@ -312,17 +312,12 @@ void loop() {
   }
 }
 
-char translatedChar = ' ';
-
-#ifndef ENABLE_CHARACTER_TRANSLATION
-  char translateCharacter(char incoming) {
-    return incoming;
-  }
-#endif
-
 void sendByte(char outbound) {
-  translatedChar = translateCharacter(outbound);
-  debug(translatedChar);
+  #ifdef ENABLE_CHARACTER_TRANSLATION
+    outbound = translateCharacter(outbound);
+  #endif
+
+  debug(outbound);
   debugf(" ");
 
   /*
@@ -334,7 +329,7 @@ void sendByte(char outbound) {
   for(uint8_t bitPos = 0;  bitPos < 8; bitPos++) {
 
     /* Send the bit. Compatible with whatever character set Arduino uses. */
-    if (bitRead(translatedChar, bitPos)) {
+    if (bitRead(outbound, bitPos)) {
       setTXDPin(HIGH);
       debugf("1");
     } else {
