@@ -156,7 +156,7 @@ Enable upper-ascii character translation. THIS IS CURRENTLY BROKEN. */
 /* --- END CONFIGURATION SECTION --- */
 
 // Version information, please don't touch this unless you are me
-#define FW_VERSION "1.0.0"
+#define FW_VERSION "1.0.1"
 
 /*
  serialBaud is the baud for Serial.begin. Default is 300 baud (YES I'M SERIOUS),
