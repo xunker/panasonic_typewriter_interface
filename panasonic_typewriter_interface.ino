@@ -91,6 +91,36 @@ LED_BUILTIN will be enabled */
 #define ENABLE_MULTIPLE_LEDS
 
 /*
+ENABLE_RTS_CTS
+
+Enable hardware flow control via RTS/CTS Pins. On Arduino Nano and similar, this
+_requires_ using an external TTL-serial-to-usb converter which exposes the RTS
+and CTS pins because those pins are not connected on the on-board
+FT232/CH340/CH9340 ICs. */
+#define ENABLE_RTS_CTS
+
+#define RTS_PIN 12 // incoming from RTS, active low (for ENABLE_RTS_CTS)
+#define CTS_PIN 11 // outgoing to CTS, active low   (for ENABLE_RTS_CTS)
+
+/*
+FLOW_STOP_THRESHOLD
+
+The maximum number of characters in the serial buffer, above which we will stop
+the data flow by asserting CTS. This must be greater than FLOW_START_THRESHOLD
+for obvious reasons. Remember, by default the AtMega328 only has a serial
+buffer size of 64 bytes. */
+#define FLOW_STOP_THRESHOLD 30
+
+/*
+FLOW_START_THRESHOLD
+
+If data flow is stopped (because we hit FLOW_STOP_THRESHOLD), this is the
+minimum number of characters in the serial buffer, below which we will restart
+the data flow by de-asserting CTS. This must be less than FLOW_STOP_THRESHOLD
+for obvious reasons. */
+#define FLOW_START_THRESHOLD 5
+
+/*
 ENABLE_AUTOMATIC_CRLF
 
 Automatically send a CR-LF when a line reaches the maximum length,
@@ -206,6 +236,10 @@ void wait(uint16_t delayMS) {
 #include "src/test_mode.h"
 #include "src/mode_button.h"
 
+#ifdef ENABLE_RTS_CTS
+  bool flowStopped = false;
+#endif
+
 void togglePin(uint8_t pinNum) { digitalWrite(pinNum, !digitalRead(pinNum)); }
 void toggleLED() { togglePin(LED_BUILTIN); }
 
@@ -222,6 +256,20 @@ void setTXDPin(bool pinState) {
   digitalWrite(TXD_PIN, pinState);
   TXDLed(pinState);
 }
+
+#ifdef ENABLE_RTS_CTS
+  void stopFlow() {
+    digitalWrite(CTS_PIN, HIGH);
+    flowStopped = true;
+    StatusLed(LOW);
+  }
+
+  void startFlow() {
+    digitalWrite(CTS_PIN, LOW);
+    flowStopped = false;
+    StatusLed(HIGH);
+  }
+#endif
 
 void waitForACKToGo(bool pinState) {
   #ifdef ENABLE_DEBUGGING
@@ -263,6 +311,13 @@ void setup() {
   setSTBPin(HIGH);
   setTXDPin(HIGH);
   StatusLed(LOW);
+
+  #ifdef ENABLE_RTS_CTS
+    pinMode(RTS_PIN, INPUT_PULLUP);
+    pinMode(CTS_PIN, OUTPUT);
+
+    startFlow();
+  #endif
 
   #ifdef ENABLE_EEPROM
     eepromSetup();
@@ -371,11 +426,26 @@ void processByte(char incomingByte) {
     return;
 
   sendByte(incomingByte);
-  StatusLed(LOW);
+  // StatusLed(LOW);
 }
 
+uint8_t bytesBuffered = 0;
 void relayLoop() {
-  while( Serial.available() > 0 ) {
+  bytesBuffered = Serial.available();
+
+  #ifdef ENABLE_RTS_CTS
+    if (flowStopped) {
+      if (bytesBuffered < FLOW_START_THRESHOLD) {
+        startFlow();
+      }
+    } else {
+      if (bytesBuffered >= FLOW_STOP_THRESHOLD) {
+        stopFlow();
+      }
+    }
+  #endif
+
+  while( bytesBuffered > 0 ) {
     incomingByte = Serial.read();
     processByte(incomingByte);
 
