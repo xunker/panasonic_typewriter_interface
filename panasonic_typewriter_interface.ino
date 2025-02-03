@@ -96,8 +96,15 @@ ENABLE_RTS_CTS
 Enable hardware flow control via RTS/CTS Pins. On Arduino Nano and similar, this
 _requires_ using an external TTL-serial-to-usb converter which exposes the RTS
 and CTS pins because those pins are not connected on the on-board
-FT232/CH340/CH9340 ICs. */
-#define ENABLE_RTS_CTS
+FT232/CH340/CH9340 ICs.
+
+If you do not use hardware flow control, you *must* add some kind of
+per-character to the transmitting device or program or else the typewriter will
+quickly be overwhelmed and start dropping characters.
+
+Even the fastest Panasonic Daisywheels can only print 15 characters/sec, which
+is only half the speed of 30 baud. */
+// #define ENABLE_RTS_CTS
 
 #define RTS_PIN 12 // incoming from RTS, active low (for ENABLE_RTS_CTS)
 #define CTS_PIN 11 // outgoing to CTS, active low   (for ENABLE_RTS_CTS)
