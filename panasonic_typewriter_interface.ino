@@ -107,9 +107,14 @@ FLOW_STOP_THRESHOLD
 
 The maximum number of characters in the serial buffer, inclusive, above which
 we will stop the data flow by asserting CTS. This must be greater than
-FLOW_START_THRESHOLD for obvious reasons. Remember, by default the AtMega328
-only has a serial buffer size of 64 bytes. */
-#define FLOW_STOP_THRESHOLD 1
+FLOW_START_THRESHOLD for obvious reasons.
+
+Remember, by default the AtMega328 only has a serial buffer size of 64 bytes.
+Also rememeber, if you are using a USB-to-Serial converter IC, that IC may have
+a buffer of it's own which _may not_ properly respond to flow control commands.
+Therefor it is recommended to set this value *very low*. You're using a
+typewriter, you've got the time to wait.*/
+#define FLOW_STOP_THRESHOLD 5
 
 /*
 FLOW_START_THRESHOLD
@@ -117,7 +122,9 @@ FLOW_START_THRESHOLD
 If data flow is stopped (because we hit FLOW_STOP_THRESHOLD), this is the
 minimum number of characters (inclusive) in the serial buffer, below which we
 will restart the data flow by de-asserting CTS. This must be less than
-FLOW_STOP_THRESHOLD for obvious reasons. */
+FLOW_STOP_THRESHOLD for obvious reasons.
+
+Zero is a good number because the typewriter itself will also have a buffer. */
 #define FLOW_START_THRESHOLD 0
 
 /*
