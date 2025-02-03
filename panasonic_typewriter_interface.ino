@@ -105,20 +105,20 @@ FT232/CH340/CH9340 ICs. */
 /*
 FLOW_STOP_THRESHOLD
 
-The maximum number of characters in the serial buffer, above which we will stop
-the data flow by asserting CTS. This must be greater than FLOW_START_THRESHOLD
-for obvious reasons. Remember, by default the AtMega328 only has a serial
-buffer size of 64 bytes. */
-#define FLOW_STOP_THRESHOLD 30
+The maximum number of characters in the serial buffer, inclusive, above which
+we will stop the data flow by asserting CTS. This must be greater than
+FLOW_START_THRESHOLD for obvious reasons. Remember, by default the AtMega328
+only has a serial buffer size of 64 bytes. */
+#define FLOW_STOP_THRESHOLD 1
 
 /*
 FLOW_START_THRESHOLD
 
 If data flow is stopped (because we hit FLOW_STOP_THRESHOLD), this is the
-minimum number of characters in the serial buffer, below which we will restart
-the data flow by de-asserting CTS. This must be less than FLOW_STOP_THRESHOLD
-for obvious reasons. */
-#define FLOW_START_THRESHOLD 5
+minimum number of characters (inclusive) in the serial buffer, below which we
+will restart the data flow by de-asserting CTS. This must be less than
+FLOW_STOP_THRESHOLD for obvious reasons. */
+#define FLOW_START_THRESHOLD 0
 
 /*
 ENABLE_AUTOMATIC_CRLF
@@ -425,8 +425,15 @@ void processByte(char incomingByte) {
   if (incomingByte == 0b00000000)
     return;
 
+  #ifndef ENABLE_RTS_CTS
+    StatusLed(HIGH);
+  #endif
+
   sendByte(incomingByte);
-  // StatusLed(LOW);
+
+  #ifndef ENABLE_RTS_CTS
+    StatusLed(LOW);
+  #endif
 }
 
 uint8_t bytesBuffered = 0;
@@ -435,7 +442,7 @@ void relayLoop() {
 
   #ifdef ENABLE_RTS_CTS
     if (flowStopped) {
-      if (bytesBuffered < FLOW_START_THRESHOLD) {
+      if (bytesBuffered <= FLOW_START_THRESHOLD) {
         startFlow();
       }
     } else {
@@ -445,7 +452,7 @@ void relayLoop() {
     }
   #endif
 
-  while( bytesBuffered > 0 ) {
+  if ( bytesBuffered > 0 ) {
     incomingByte = Serial.read();
     processByte(incomingByte);
 
