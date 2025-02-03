@@ -89,6 +89,10 @@ and change the following lines as appropriate:
 #define GO_PIN      A6 // trigger printing to begin when this is pulled low
 
 #define MODE_PIN    A7 // trigger printing to begin when this is pulled low
+
+/* RTS_PIN/CTS_PIN are only needed if `#define ENABLE_RTS_CTS` is uncommented */
+#define RTS_PIN 12 // incoming from RTS, active low (for ENABLE_RTS_CTS)
+#define CTS_PIN 11 // outgoing to CTS, active low   (for ENABLE_RTS_CTS)
 ```
 
 CHECK WHAT KIND OF CABLE YOU HAVE, and remember that a Macintosh-style printer
@@ -172,18 +176,30 @@ See [SERIAL_CONFIG.md](./SERIAL_CONFIG.md).
 
 ## Known Problems
 
-### Can't keep up with 300 baud in normal circumstances
+### Can't keep up with 300 baud without hardware flow control
 
 The default speed is 300 baud (see "Send text - SLOWLY" for reasons), and even
-that has problems currently. Text will get out-of-sync in about 2 lines.
+that has problems unless you use hardware flow control (RTS/CTS) and text will
+start to be dropped in about 2 lines.
 
-This is related to the Arduino Serial buffer being
-[only 64
-bytes](https://docs.arduino.cc/language-reference/en/functions/communication/serial/available/), and alternatives are being explored.
+This is because of two things issues:
+* the Arduino Serial buffer is
+  [only 64 bytes](https://docs.arduino.cc/language-reference/en/functions/communication/serial/available/),
+  on the ATmega328
+* Even the fastest Panasonic Daisywheels can only print 15 characters/sec, which is
+  only half the speed of 300 baud, and most models can only print 12 CPS
 
-Until I fully debug the issue, the only reliable fixes are A) use 150/110 baud if you
-can, or B) add a "character delay" when you send (CoolTerm can do this, Options->Transmit->"Use
-Transmit Character Delay", with a value >20ms).
+There are two solutions:
+* Use hardware flow control
+  - On USB, this requires use of a *separate* USB-to-Serial adapter because the
+    IC included on Arduino Nano does *not* connect any lines besides TxD, RxD,
+    and DTR
+  - The current Adapter Board can use a separate USB-to-Serial adapter connected
+    to J4, with CTS connexted to "TX1" and RTC connected to "RX1"
+  - Future versions of the adapter board will include footprints for a separate
+    USB-to-serial converter
+* add a "character delay" when you send, greater than 30ms/character
+  - CoolTerm can do this: `Options`->`Transmit`->`Use Transmit Character Delay`
 
 ### Reboot required when switching from from HALT to RUN with Serial Console
 
@@ -238,23 +254,31 @@ service manual:
 * Convert special characters like tab ("\t") to spaces, to prevent typewriter
   from going crazy if no tabs have been set
   * ability to set tab-to-space count in serial console
-* mode button support
-  * long press triggers demo while in "run" mode
+* separate USB-to-serial IC with hardware flow control
+  - RTS/CTS
+  - DTR/DSR
+* option for RS-232 xceiver
+  - tx, rx, rts, cts at minimum
+  - dtr, dsr, dcd as an option
+  - RI might be useful too, not sure if old printers used that
+  - Consider making it a full 25-pin serial so the secondary pins can be used
+    * example: Imagewriter I used pin 14 (Secondary TxD) to signal a fault
+    * would need 5 additional pins:
+      - Secondary Transmitted Data (STD or S.TxD): pin 14
+      - Secondary Received Data (SRD or S.RxD): pin 16
+      - Secondary Request To Send (SRTS or S.RTS): pin 19
+      - Secondary Clear To Send (SCTS or S.CRS): pin 13
+      - Secondary Carrier Detect (SDCD or S.DCD): pin 12
+* Transceivers or driver/receiver pairs for typewriter connection, for buffering
+  and for possible 3.3v operation
+  - 3x active-low drivers
+  - 1x active-low receiver
+
+### Want
 * Better serial buffering
   * Default 64 byte buffer doesn't even do 300 baud well
   * Implement a 1K ring buffer? We have the free SRAM
-* Software flow control
-  * [theoretically](https://forum.arduino.cc/t/xon-xoff-in-arduino/1122946/13)
-    [possible](https://forum.arduino.cc/t/xon-xoff-problems-with-ch340g-on-arduio-uno-clone/647752/2),
-    would negate the need for a bigger serial buffer
-* Transceivers or driver/receiver pairs
-
-### Want
 * Support alt Serial on LGT8F328 with Rx/Tx pins 5 & 6
-* Hardware Flow control
-  * The RTS/CTS pins on the FT232/CH9340 are not connected to anything, so it
-    means rolling a new adapter board with our own USB Serial IC, or moving
-    to an MCU that implements RTS/CTS or DTR/DSR via their USB stack. ESP32?
 * I2C display?
 * Automatically insert correct line-breaks, depending on CPI switch setting
   - May not be needed, Windows' generic/text only printer [automatically wraps
@@ -262,11 +286,8 @@ service manual:
 * Automatically pause printing to insert next sheet of paper, based on
   line-spacing switch setting
   * MODE button becomes "Continue" button
-* add CTS/RTS/DTR/DSR pins to serial breakout
-  * for old computers
-  * for signaling buffer is full
-  * for signaling Paper Out
-* mode button cycles throughCPI/Line Space settings? Need display for this?
+
+* mode button cycles through CPI/Line Space settings? Need display for this?
 
 ## License
 
