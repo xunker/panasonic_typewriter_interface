@@ -9,6 +9,29 @@ Here is an adapter board to make it easier to wire up your typewriter. It's
 based ardound the Arduino Nano, and will work with compatible clones like
 LGT8F328.
 
+## Important note about Hardware Flow Control
+
+This version of the board (marked "Rev 2024-10-A") does not support Hardware
+Flow Control (RTS/CTS or DTR/DSR) without additional components.
+
+You CAN still use this design without flow control as long as you are able to
+add a ~30-50 millisecond-per-character delay to your transmission, or reduce
+the Baud Rate to 150 or 110.
+
+CoolTerm, for example has the option to add this per-character delay.
+
+To add hardware flow control to this design, you need to use an external
+USB-to-Serial adapter which has connections for RTS/CTS and/or DTR/DSR.
+
+You can connect the external USB-to-Serial to this board via connector J4 on the
+bottom of the board, and use pin labeld "RX1" as RTS and "TX1" as CTS. "TX0"
+and "RX0" be be used as TxD and RxD respectively.
+
+J4 is a surface-mount footprint for a JST GH connector (1.25mm) but a Molex
+PicoBlade (also sold as "JST Micro" connector) will also fit. You can also
+solder wires directly to the pads, or use a piece of 1.27mm break-away header
+to build your own conenctor.
+
 ### Voltage Warning
 
 Some "Nano" clone modules might be 3.3V instead of 5V. This board will **only

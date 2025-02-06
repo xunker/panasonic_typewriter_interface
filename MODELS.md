@@ -67,7 +67,7 @@ RK-T25   | yes     | RP-K100          |
 RK-T28   |         |                  |
 RK-T30   |         |                  |
 RK-T32   | yes     | RP-K100, RP-K105 |
-RK-T33   |         |                  |
+RK-T33   | yes     | RP-K100          |
 RK-T34   |         |                  |
 RK-T35   |         |                  |
 RK-T36   | yes     | RP-K100, RP-K105 |

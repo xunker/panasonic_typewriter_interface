@@ -20,8 +20,8 @@ A complete video of the ~~high~~ low-speed daisywheel action can be found on [th
 ## Table of Contents
 
 - [Compatibility](#compatibility)
-- [Pinout](#pinout)
-- [Adapter Board](#adapter-board)
+- [Typewriter Pinout](#typewriter-pinout)
+- [Arduino Wiring](#arduino-wiring)
 - [Code](#code)
 - [Printerering (aka, how to use this)](#printerering-aka-how-to-use-this)
 - [Serial Configuration Terminal](#serial-configuration-terminal)
@@ -29,8 +29,6 @@ A complete video of the ~~high~~ low-speed daisywheel action can be found on [th
 - [Theory of Operation](#theory-of-operation)
 - [TODO](#todo)
 - [License](#license)
-
----
 
 ## Compatibility
 
@@ -43,15 +41,64 @@ Panasonic typewriter with the round, 8-pin MiniDIN port.
 
 Untested, but should work with machines which have a DE-9 (DB-9) connector.
 
-## Pinout
+## Typewriter Pinout
 
 See [PINOUT.md](./PINOUT.md) for detailed information about the typewriter
 connector pinout.
 
-## Adapter Board
+## Arduino Wiring
+
+Although this is built around the Arduino Nano, any 5V board which uses the
+ATmega328 will also work. Any other 5V ATmega MCU should work as as well (such
+as the ATmega32U4in the Arduino Micro), and clones like the LGT8F328 (tested).
+
+Non-ATmega/AVR boards *may* work, as long as they are compatible with the
+libraries used in this project (see "Required Libraries"), have enough pins,
+and run on 5V (or are 5V-tolerant). I have not tried any of this.
+
+### Adapter Board
 
 There's an [adapter board](adapter_boards/README.md) available to ease assembly,
 and to provide additional features.
+
+### Connecting Arduino to Typewriter without Adapter Board
+
+Minimum required:
+
+Arduino Pin | Goes To                | Purpose
+------------|------------------------|--------
+A0          | Typewriter ON_LINE pin | ~ON_LINE signal to typewriter
+A1          | Typewriter TXD_PIN pin | TXD_PIN signal to typewriter
+A2          | Typewriter STB_PIN pin | ~STB_PIN signal to typewriter
+A3          | Typewriter ACK_PIN pin | ~ACK_PIN signal from typewriter
+A6          | Switch to ground       | "RUN/HALT" switch (GO_PIN), active low
+
+Optional "Mode" button
+
+Arduino Pin | Goes To          | Purpose
+------------|------------------|--------
+A7          | Button to ground | Mode button (MODE_PIN), optional, active low
+
+You can use the built-in USB port as the Serial connection, but hardware flow
+control will not be available. To use hardware flow control you will need to
+connect up to an external USB to Serial adapter:
+
+Arduino Pin | Goes To                  | Purpose
+------------|--------------------------|--------
+TX1 (D1)    | RxD on USB Serial Module | Transmit serial data to USB host
+RX0 (D0)    | TxD on USB Serial Module | Receive serial data from USB host
+11          | CTS on USB Serial module | CTS (Clear to Send)
+12          | RTS on USB Serial module | RTS (Request to Send)
+
+You can also connect some optional additional LEDs for debugging (or because
+they look neat when they blink):
+
+Arduino Pin | Goes To | Purpose
+------------|---------|--------
+8           | LED +   | State of ON_LINE pin
+6           | LED +   | State of STB_LED pin
+2           | LED +   | State of ACK_LED pin
+3           | LED +   | State of TXD_LED pin
 
 ## Code
 
