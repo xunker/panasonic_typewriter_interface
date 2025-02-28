@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SP3238EEA_L_TR")(type "KiCad")(uri "${KIPRJMOD}/SP3238EEA_L_TR")(options "")(descr ""))
+)
