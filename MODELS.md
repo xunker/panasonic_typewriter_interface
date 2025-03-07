@@ -28,12 +28,12 @@ KX-R193  | yes     | KX-R60           | 12cps
 KX-R194  | yes     | KX-R60           |
 KX-R195  | yes     | KX-R60           |
 KX-R200  | no      |                  | no port on side in pictures
-KX-R210  |         |                  |
+KX-R210  | no      |                  | no port on side in pictures
 KX-R250  | no      |                  |
 KX-R305  | no      |                  |
 KX-R310  | no      |                  |
 KX-R320  | no      |                  |
-KX-R330  |         |                  |
+KX-R330  | no      |                  | Computer connection not mentioned on product box
 KX-R340  |         |                  |
 KX-R435  | yes     | KX-R60           | 12cps
 KX-R445  |         |                  |
@@ -64,13 +64,13 @@ KX-W1525 |         |                  |
 KX-WL50  | yes     | KX-R60, DB-25    | NiCD battery (1.2v * 10)
 KX-WL55  | yes     | KX-R60, DB-25    |
 RK-T25   | yes     | RP-K100          |
-RK-T28   |         |                  |
+RK-T28   |         |                  | External Mode via CODE+8
 RK-T30   |         |                  |
-RK-T32   | yes     | RP-K100, RP-K105 |
-RK-T33   | yes     | RP-K100          |
-RK-T34   |         |                  |
-RK-T35   |         |                  |
-RK-T36   | yes     | RP-K100, RP-K105 |
+RK-T32   | yes     | RP-K100, RP-K105 | External Mode via CODE+5
+RK-T33   | yes     | RP-K100          | External Mode via EXT/KBI/KBII switch
+RK-T34   | yes     |                  | External Mode via EXT/KBI/KBII switch
+RK-T35   | yes     |                  | Sticker on front of typewriter says so
+RK-T36   | yes     | RP-K100, RP-K105 | External Mode via EXT/KBI/KBII switch
 RK-T37   |         |                  |
 RK-T40   | yes     | Unknown          |
 RK-T40D  |         |                  |
