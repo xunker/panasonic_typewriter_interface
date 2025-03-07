@@ -5281,7 +5281,7 @@
 			)
 		)
 		(property "Value" "Conn_01x09"
-			(at 0 16.86 360)
+			(at 0 16.86 0)
 			(layer "F.Fab")
 			(uuid "0baa2641-d0af-4954-801f-d08bfa84d108")
 			(effects
@@ -5292,7 +5292,7 @@
 			)
 		)
 		(property "Footprint" "Connector_Dsub:DSUB-9_Female_EdgeMount_P2.77mm"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "35a38118-4d47-479f-a241-55cbe8b443c5")
@@ -5304,7 +5304,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "01c7ef53-e459-442b-99e6-2deebc274b36")
@@ -5316,7 +5316,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x09, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "044bdb8a-72fc-444d-877b-78f275af9ea0")
@@ -6113,7 +6113,7 @@
 			(uuid "4732b4de-8333-464a-81bd-56dd0479ef05")
 		)
 		(fp_text user "PCB edge"
-			(at -10.425 1.323333 360)
+			(at -10.425 1.323333 0)
 			(layer "Dwgs.User")
 			(uuid "ca0c1973-3e1e-4601-a9c2-2a2c9b02da20")
 			(effects
@@ -6124,7 +6124,7 @@
 			)
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 3.39 360)
+			(at 0 3.39 0)
 			(layer "F.Fab")
 			(uuid "e279b728-4b7c-42af-8b9e-96b943e5f755")
 			(effects
