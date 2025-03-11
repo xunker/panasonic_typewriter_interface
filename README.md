@@ -4,8 +4,8 @@ https://github.com/xunker/panasonic_typewriter_interface
 
 Print text using the Interface Port of your compatible Panasonic KX-R Daisywheel
 typewriter, KX-W word processor, RK-T "CupWheel" typewriter, or KX-WD55
-daisywheel printer. Emulates the serial/RS-232 function of the KX-R60, RP-K100,
-or RP-K105 interface adapters.
+daisywheel printer. Emulates the serial/RS-232 function of the KX-R60 (currently
+working), and RP-K100/RP-K105 (in development) interface adapters.
 
 Use your 🏋️heavy🥌 and 🐢slow🐌 typewriter as a noisy, inconvenient, inflexible,
 single-page printer!
@@ -40,6 +40,8 @@ Panasonic typewriter with the round, 8-pin MiniDIN port.
 ### KX-W series with DE-9 port
 
 Untested, but should work with machines which have a DE-9 (DB-9) connector.
+**Currently does not work**, but is in active development. See
+[rp-k10x_vs_kx-r60.md](./rp-k10x_vs_kx-r60.md) for research details.
 
 ## Typewriter Pinout
 
@@ -73,15 +75,15 @@ A2          | Typewriter STB_PIN pin | ~STB_PIN signal to typewriter
 A3          | Typewriter ACK_PIN pin | ~ACK_PIN signal from typewriter
 A6          | Switch to ground       | "RUN/HALT" switch (GO_PIN), active low
 
-Optional "Mode" button
+Optional "Mode" button:
 
 Arduino Pin | Goes To          | Purpose
 ------------|------------------|--------
 A7          | Button to ground | Mode button (MODE_PIN), optional, active low
 
-You can use the built-in USB port as the Serial connection, but hardware flow
-control will not be available. To use hardware flow control you will need to
-connect up to an external USB to Serial adapter:
+Separate USB-to-Serial Adapter: You can use the built-in USB port as the Serial
+connection, but hardware flow control will not be available. To use hardware
+flow control you will need to connect up to an external USB to Serial adapter:
 
 Arduino Pin | Goes To                  | Purpose
 ------------|--------------------------|--------
@@ -259,81 +261,43 @@ The "[Mode Button](./mode_button.h)" is currently GN/DN (goes nowhere & does not
 
 ## Theory of Operation
 
-From [this page](./panasonic_rp-k100_interface_circuit.pdf) in the KX-W50TH/W60TH
-service manual:
-
-> 10.2.4 Interface Circuit
->
-> The interface circuit handles the handshaking needed for communication with a
-> I/F Adaptor (RP-K100). The RP-K100 allows interfacing with a host computer.
-> The handshake method is described in the following steps.
->
-> Process:
->
-> (1) The RP-K100 changes the ON LINE signal from H to L indicating that data
-> transmission has started . This ON LINE signal remains Low during the
-> transmission of 1 byte.
->
-> (2) The RP-K100 first sends the LSB (DO) of a transmitted byte to the TXD line
-> and changes the STB signal from H to L. This STB signal is sent to P51 of the
-> CPU which is the interruption.
->
-> (3) In the interruption state, the CPU receives a TXD signal and changes the
-> ACK signal from L to H. This ACK signal is sent to the RP-K100.
->
-> (4) After the RP-K100 has received the ACK signal (L level), the STB signal
-> changes from L to H.
->
-> (5) When the STB signal (High) is sent from the RP-K100, the thermalwriter
-> sends the ACK signal (High) to the RP-K100.
->
-> (6) When the ACK signal is High, the RP-K100 starts to send the next bit of
-> data.
->
-> (7) Once the RP-K100 sends 1 byte of data (8 bits) to the CPU , the ON LINE
-> signal changes from L to H.
+See [rp-k10x_vs_kx-r60.md](./rp-k10x_vs_kx-r60.md) for a detailed sequence diagram.
 
 ## TODO
 
 ### Need
+Rough order of importance:
+
+* Working emulation of [RP-K100 and RP-K105](./rp-k10x_vs_kx-r60.md) adapters
 * Use .h files properly; move code out of those
+* Finish V2 adapter board which will give RTS/CTS and RS-232 options
+  - must get RP-K100 and RP-K105 workign first
 * Get special/accented character conversion functioning
-* Convert special characters like tab ("\t") to spaces, to prevent typewriter
-  from going crazy if no tabs have been set
-  * ability to set tab-to-space count in serial console
-* separate USB-to-serial IC with hardware flow control
-  - RTS/CTS
-  - DTR/DSR
-* option for RS-232 xceiver
-  - tx, rx, rts, cts at minimum
-  - dtr, dsr, dcd as an option
-  - RI might be useful too, not sure if old printers used that
-  - Consider making it a full 25-pin serial so the secondary pins can be used
-    * example: Imagewriter I used pin 14 (Secondary TxD) to signal a fault
-    * would need 5 additional pins:
-      - Secondary Transmitted Data (STD or S.TxD): pin 14
-      - Secondary Received Data (SRD or S.RxD): pin 16
-      - Secondary Request To Send (SRTS or S.RTS): pin 19
-      - Secondary Clear To Send (SCTS or S.CRS): pin 13
-      - Secondary Carrier Detect (SDCD or S.DCD): pin 12
+* Convert special characters like tab ("\t") to spaces, to prevent typewriter from going crazy if no tabs have been set
+  - ability to set tab-to-space count in serial console
+
+### Want
+In no particular order:
+* DTR/DSR support, for compatibility with older hosts that didn't use RTS/CTS
+  - Ex: Apple II, C64, TRS80, etc.
 * Transceivers or driver/receiver pairs for typewriter connection, for buffering
   and for possible 3.3v operation
   - 3x active-low drivers
   - 1x active-low receiver
-
-### Want
 * Better serial buffering
   * Default 64 byte buffer doesn't even do 300 baud well
   * Implement a 1K ring buffer? We have the free SRAM
+  * This is less of an issue with RTS/CTS support
 * Support alt Serial on LGT8F328 with Rx/Tx pins 5 & 6
-* I2C display?
+* Separate serial interface for debugging output on different pins, with different baud rate
+  * Software serial, or SERIAL1 on 328PB or LGT8F328
+* I2C display support
+  - in software, alreadu have hardware support via Stemma connector
 * Automatically insert correct line-breaks, depending on CPI switch setting
-  - May not be needed, Windows' generic/text only printer [automatically wraps
-  at 80 characters](https://support.microsoft.com/en-us/topic/printing-wide-carriage-with-generic-text-only-print-driver-3bdb3c49-abdd-597d-6416-5d460efab182)
-* Automatically pause printing to insert next sheet of paper, based on
-  line-spacing switch setting
+  - May not be needed or even supported
+    * Windows' generic/text only printer [automatically wraps at 80 characters](https://support.microsoft.com/en-us/topic/printing-wide-carriage-with-generic-text-only-print-driver-3bdb3c49-abdd-597d-6416-5d460efab182)
+* Automatically pause printing to insert next sheet of paper, based on line-spacing switch setting
   * MODE button becomes "Continue" button
-
 * mode button cycles through CPI/Line Space settings? Need display for this?
 
 ## License
